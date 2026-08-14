@@ -3,6 +3,21 @@
 @theme {
   --font-sans: 'Nunito', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
   --font-display: 'Fredoka', cursive, sans-serif;
+
+  /* Fluid 5-Tier Responsive System:
+     < 480px     : Small Phone (base)
+     480–767px   : Large Phone (xs:)
+     768–1023px  : Tablet (md:)
+     1024–1439px : Laptop / Small Desktop (lg:)
+     1440px+     : Large Display / Desktop (2xl:)
+  */
+  --breakpoint-xs: 480px;
+  --breakpoint-sm: 640px;
+  --breakpoint-md: 768px;
+  --breakpoint-lg: 1024px;
+  --breakpoint-xl: 1280px;
+  --breakpoint-2xl: 1440px;
+  --breakpoint-3xl: 1600px;
 }
 
 @layer base {

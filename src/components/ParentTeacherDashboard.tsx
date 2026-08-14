@@ -47,46 +47,46 @@ export const ParentTeacherDashboard: React.FC<ParentTeacherDashboardProps> = ({
   };
 
   return (
-    <div className="fixed inset-0 z-50 bg-stone-900/60 backdrop-blur-sm flex items-center justify-center p-4">
+    <div className="fixed inset-0 z-50 bg-stone-900/60 backdrop-blur-sm flex items-center justify-center p-2 xs:p-4 md:p-6 antialiased">
       <motion.div
         initial={{ scale: 0.95, opacity: 0 }}
         animate={{ scale: 1, opacity: 1 }}
         exit={{ scale: 0.95, opacity: 0 }}
-        className="bg-white rounded-3xl max-w-4xl w-full max-h-[90vh] flex flex-col shadow-2xl border-4 border-indigo-400 overflow-hidden"
+        className="bg-white rounded-2xl xs:rounded-3xl max-w-4xl 2xl:max-w-5xl w-full max-h-[92vh] flex flex-col shadow-2xl border-3 xs:border-4 border-indigo-400 overflow-hidden"
       >
         {/* Header */}
-        <div className="bg-gradient-to-r from-indigo-600 via-purple-600 to-pink-600 text-white p-6 flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <div className="p-3 bg-white/20 rounded-2xl backdrop-blur-sm">
-              <ShieldCheck className="w-8 h-8 text-yellow-300" />
+        <div className="bg-gradient-to-r from-indigo-600 via-purple-600 to-pink-600 text-white p-4 xs:p-6 flex items-center justify-between gap-2">
+          <div className="flex items-center gap-2.5 xs:gap-3 min-w-0">
+            <div className="p-2 xs:p-3 bg-white/20 rounded-xl xs:rounded-2xl backdrop-blur-sm shrink-0">
+              <ShieldCheck className="w-6 h-6 xs:w-8 xs:h-8 text-yellow-300" />
             </div>
-            <div>
-              <h2 className="text-2xl font-black">Parent & Teacher Learning Portal</h2>
-              <p className="text-indigo-100 text-xs md:text-sm">
+            <div className="min-w-0">
+              <h2 className="text-lg xs:text-2xl 2xl:text-3xl font-black truncate">Parent & Teacher Learning Portal</h2>
+              <p className="text-indigo-100 text-[11px] xs:text-xs md:text-sm line-clamp-1">
                 Real-time progress, accuracy analytics, curriculum mastery & child safety
               </p>
             </div>
           </div>
           <button
             onClick={onClose}
-            className="p-2 rounded-full bg-white/20 hover:bg-white/30 text-white transition-colors cursor-pointer"
+            className="min-h-[40px] min-w-[40px] xs:min-h-[44px] xs:min-w-[44px] p-2 rounded-full bg-white/20 hover:bg-white/30 text-white transition-colors cursor-pointer shrink-0 flex items-center justify-center"
           >
-            <X className="w-6 h-6" />
+            <X className="w-5 h-5 xs:w-6 xs:h-6" />
           </button>
         </div>
 
         {/* Tab Navigation */}
-        <div className="flex border-b border-stone-200 bg-stone-50 px-6 gap-2 text-xs md:text-sm font-bold text-stone-600 overflow-x-auto">
+        <div className="flex border-b border-stone-200 bg-stone-50 px-3 xs:px-6 gap-1 xs:gap-2 text-[11px] xs:text-xs md:text-sm font-bold text-stone-600 overflow-x-auto">
           {[
-            { id: 'overview', label: '📊 Overview & KPIs' },
-            { id: 'subjects', label: '🧠 Subject Mastery' },
-            { id: 'grades', label: '🐣 Grade Progress (Nursery–Class 5)' },
-            { id: 'safety', label: '🛡️ Safety & Privacy Pledge' },
+            { id: 'overview', label: '📊 Overview' },
+            { id: 'subjects', label: '🧠 Subjects' },
+            { id: 'grades', label: '🐣 Grades (Nursery–5)' },
+            { id: 'safety', label: '🛡️ Safety Pledge' },
           ].map((tab) => (
             <button
               key={tab.id}
               onClick={() => setActiveTab(tab.id as typeof activeTab)}
-              className={`py-3 px-4 border-b-2 font-black transition-colors whitespace-nowrap cursor-pointer ${
+              className={`py-2.5 xs:py-3 px-3 xs:px-4 border-b-2 font-black transition-colors whitespace-nowrap cursor-pointer ${
                 activeTab === tab.id
                   ? 'border-indigo-600 text-indigo-700 bg-white rounded-t-xl'
                   : 'border-transparent hover:text-stone-900'
@@ -98,53 +98,53 @@ export const ParentTeacherDashboard: React.FC<ParentTeacherDashboardProps> = ({
         </div>
 
         {/* Tab Content Body */}
-        <div className="flex-1 overflow-y-auto p-6 space-y-6 text-stone-800">
+        <div className="flex-1 overflow-y-auto p-4 xs:p-6 space-y-4 xs:space-y-6 text-stone-800">
           {activeTab === 'overview' && (
             <>
               {/* Metric KPI Cards */}
-              <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                <div className="bg-amber-50 border-2 border-amber-200 p-4 rounded-2xl">
-                  <div className="flex items-center justify-between text-amber-700 text-xs font-black uppercase">
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-2.5 xs:gap-4">
+                <div className="bg-amber-50 border-2 border-amber-200 p-3 xs:p-4 rounded-xl xs:rounded-2xl">
+                  <div className="flex items-center justify-between text-amber-700 text-[10px] xs:text-xs font-black uppercase">
                     <span>Stars Earned</span>
-                    <Star className="w-4 h-4 fill-current text-amber-500" />
+                    <Star className="w-3.5 h-3.5 xs:w-4 xs:h-4 fill-current text-amber-500" />
                   </div>
-                  <div className="text-3xl font-black text-amber-900 mt-2">{stats.starsEarned}</div>
-                  <span className="text-xs text-amber-700">Total learning stars</span>
+                  <div className="text-2xl xs:text-3xl font-black text-amber-900 mt-1 xs:mt-2">{stats.starsEarned}</div>
+                  <span className="text-[10px] xs:text-xs text-amber-700">Total learning stars</span>
                 </div>
 
-                <div className="bg-emerald-50 border-2 border-emerald-200 p-4 rounded-2xl">
-                  <div className="flex items-center justify-between text-emerald-700 text-xs font-black uppercase">
+                <div className="bg-emerald-50 border-2 border-emerald-200 p-3 xs:p-4 rounded-xl xs:rounded-2xl">
+                  <div className="flex items-center justify-between text-emerald-700 text-[10px] xs:text-xs font-black uppercase">
                     <span>Accuracy Rate</span>
-                    <TrendingUp className="w-4 h-4 text-emerald-600" />
+                    <TrendingUp className="w-3.5 h-3.5 xs:w-4 xs:h-4 text-emerald-600" />
                   </div>
-                  <div className="text-3xl font-black text-emerald-900 mt-2">{overallAccuracy}%</div>
-                  <span className="text-xs text-emerald-700">{stats.correctAttempts} / {stats.totalAttempts} questions</span>
+                  <div className="text-2xl xs:text-3xl font-black text-emerald-900 mt-1 xs:mt-2">{overallAccuracy}%</div>
+                  <span className="text-[10px] xs:text-xs text-emerald-700">{stats.correctAttempts} / {stats.totalAttempts} questions</span>
                 </div>
 
-                <div className="bg-sky-50 border-2 border-sky-200 p-4 rounded-2xl">
-                  <div className="flex items-center justify-between text-sky-700 text-xs font-black uppercase">
+                <div className="bg-sky-50 border-2 border-sky-200 p-3 xs:p-4 rounded-xl xs:rounded-2xl">
+                  <div className="flex items-center justify-between text-sky-700 text-[10px] xs:text-xs font-black uppercase">
                     <span>Time Engaged</span>
-                    <Clock className="w-4 h-4 text-sky-600" />
+                    <Clock className="w-3.5 h-3.5 xs:w-4 xs:h-4 text-sky-600" />
                   </div>
-                  <div className="text-3xl font-black text-sky-900 mt-2">{totalMinutes}m</div>
-                  <span className="text-xs text-sky-700">Active educational time</span>
+                  <div className="text-2xl xs:text-3xl font-black text-sky-900 mt-1 xs:mt-2">{totalMinutes}m</div>
+                  <span className="text-[10px] xs:text-xs text-sky-700">Active educational time</span>
                 </div>
 
-                <div className="bg-purple-50 border-2 border-purple-200 p-4 rounded-2xl">
-                  <div className="flex items-center justify-between text-purple-700 text-xs font-black uppercase">
-                    <span>Games Completed</span>
-                    <Award className="w-4 h-4 text-purple-600" />
+                <div className="bg-purple-50 border-2 border-purple-200 p-3 xs:p-4 rounded-xl xs:rounded-2xl">
+                  <div className="flex items-center justify-between text-purple-700 text-[10px] xs:text-xs font-black uppercase">
+                    <span>Completed</span>
+                    <Award className="w-3.5 h-3.5 xs:w-4 xs:h-4 text-purple-600" />
                   </div>
-                  <div className="text-3xl font-black text-purple-900 mt-2">{stats.completedGameIds.length} / 80</div>
-                  <span className="text-xs text-purple-700">Curriculum games</span>
+                  <div className="text-2xl xs:text-3xl font-black text-purple-900 mt-1 xs:mt-2">{stats.completedGameIds.length} / 80</div>
+                  <span className="text-[10px] xs:text-xs text-purple-700">Curriculum games</span>
                 </div>
               </div>
 
               {/* Recommendations & Strengths */}
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div className="bg-emerald-50/70 border-2 border-emerald-300 p-5 rounded-2xl">
-                  <h4 className="font-extrabold text-emerald-900 flex items-center gap-2 mb-2">
-                    <CheckCircle className="w-5 h-5 text-emerald-600" />
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-3 xs:gap-4">
+                <div className="bg-emerald-50/70 border-2 border-emerald-300 p-4 xs:p-5 rounded-xl xs:rounded-2xl">
+                  <h4 className="font-extrabold text-emerald-900 flex items-center gap-2 mb-2 text-sm xs:text-base">
+                    <CheckCircle className="w-4 h-4 xs:w-5 xs:h-5 text-emerald-600" />
                     <span>Demonstrated Strengths</span>
                   </h4>
                   <ul className="space-y-1.5 text-xs md:text-sm text-emerald-950 font-medium">
@@ -154,9 +154,9 @@ export const ParentTeacherDashboard: React.FC<ParentTeacherDashboardProps> = ({
                   </ul>
                 </div>
 
-                <div className="bg-indigo-50/70 border-2 border-indigo-300 p-5 rounded-2xl">
-                  <h4 className="font-extrabold text-indigo-900 flex items-center gap-2 mb-2">
-                    <Sparkles className="w-5 h-5 text-indigo-600" />
+                <div className="bg-indigo-50/70 border-2 border-indigo-300 p-4 xs:p-5 rounded-xl xs:rounded-2xl">
+                  <h4 className="font-extrabold text-indigo-900 flex items-center gap-2 mb-2 text-sm xs:text-base">
+                    <Sparkles className="w-4 h-4 xs:w-5 xs:h-5 text-indigo-600" />
                     <span>Recommended Next Focus</span>
                   </h4>
                   <ul className="space-y-1.5 text-xs md:text-sm text-indigo-950 font-medium">
@@ -168,17 +168,17 @@ export const ParentTeacherDashboard: React.FC<ParentTeacherDashboardProps> = ({
               </div>
 
               {/* Certificate Download Bar */}
-              <div className="bg-amber-100/80 border-2 border-amber-300 p-4 rounded-2xl flex items-center justify-between gap-4">
-                <div className="flex items-center gap-3">
-                  <Award className="w-8 h-8 text-amber-700" />
+              <div className="bg-amber-100/80 border-2 border-amber-300 p-3.5 xs:p-4 rounded-xl xs:rounded-2xl flex flex-col sm:flex-row items-center justify-between gap-3 xs:gap-4">
+                <div className="flex items-center gap-3 text-center sm:text-left">
+                  <Award className="w-7 h-7 xs:w-8 xs:h-8 text-amber-700 shrink-0 hidden sm:block" />
                   <div>
-                    <h4 className="font-black text-amber-900 text-sm">Official Learning Progress Certificate</h4>
-                    <p className="text-xs text-amber-800">Print or save a colorful certificate of achievement for the student.</p>
+                    <h4 className="font-black text-amber-900 text-xs xs:text-sm">Official Learning Progress Certificate</h4>
+                    <p className="text-[11px] xs:text-xs text-amber-800">Print or save a colorful certificate of achievement for the student.</p>
                   </div>
                 </div>
                 <button
                   onClick={handlePrintCertificate}
-                  className="bg-amber-500 hover:bg-amber-600 text-white font-bold text-xs px-4 py-2 rounded-xl flex items-center gap-1.5 shadow-sm transition-transform hover:scale-105"
+                  className="min-h-[44px] w-full sm:w-auto bg-amber-500 hover:bg-amber-600 text-white font-bold text-xs px-4 py-2.5 rounded-xl flex items-center justify-center gap-1.5 shadow-sm transition-transform hover:scale-105 cursor-pointer shrink-0"
                 >
                   <Printer className="w-4 h-4" />
                   <span>Print Report</span>

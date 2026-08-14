@@ -265,23 +265,23 @@ export const App: React.FC = () => {
       {/* ============================================================ */}
       {/* TOP HEADER & CONTROLS BAR */}
       {/* ============================================================ */}
-      <header className="sticky top-0 z-40 bg-white/95 backdrop-blur-md border-b-2 border-stone-200 shadow-xs px-3 sm:px-6 py-2.5">
-        <div className="max-w-7xl mx-auto flex items-center justify-between gap-2 sm:gap-4">
+      <header className="sticky top-0 z-40 bg-white/95 backdrop-blur-md border-b-2 border-stone-200 shadow-xs px-3 xs:px-4 md:px-6 2xl:px-8 py-2.5 xs:py-3">
+        <div className="max-w-7xl 2xl:max-w-[1600px] mx-auto flex items-center justify-between gap-2 xs:gap-3 md:gap-4">
           {/* App Brand */}
-          <div className="flex items-center gap-2 text-stone-800">
-            <span className="text-2xl">✨</span>
+          <div className="flex items-center gap-2 xs:gap-2.5 text-stone-800 shrink-0">
+            <span className="text-xl xs:text-2xl 2xl:text-3xl">✨</span>
             <div className="flex flex-col">
-              <span className="font-black text-base sm:text-lg tracking-tight bg-gradient-to-r from-amber-600 to-orange-600 bg-clip-text text-transparent leading-tight">
+              <span className="font-black text-sm xs:text-base md:text-lg 2xl:text-xl tracking-tight bg-gradient-to-r from-amber-600 to-orange-600 bg-clip-text text-transparent leading-tight">
                 Magic Learning Land
               </span>
-              <span className="text-[10px] font-bold text-stone-500 hidden sm:block">
+              <span className="text-[9px] xs:text-[10px] 2xl:text-xs font-bold text-stone-500 hidden sm:block">
                 Curriculum Adventure • Nursery to Class 5
               </span>
             </div>
           </div>
 
           {/* Right Side: Daily Quest, Audio Controls & Parent Portal */}
-          <div className="flex items-center gap-1.5 sm:gap-2">
+          <div className="flex items-center gap-1.5 xs:gap-2 md:gap-2.5">
             {/* Daily Mission Button */}
             <button
               id="btn_daily_mission"
@@ -289,10 +289,10 @@ export const App: React.FC = () => {
                 soundEngine.playGentlePop();
                 setIsDailyMissionOpen(true);
               }}
-              className="relative flex items-center gap-1 bg-rose-50 hover:bg-rose-100 text-rose-800 border border-rose-300 px-2.5 sm:px-3 py-1 sm:py-1.5 rounded-2xl font-black text-xs sm:text-sm transition-colors cursor-pointer"
+              className="relative min-h-[40px] xs:min-h-[44px] flex items-center gap-1 xs:gap-1.5 bg-rose-50 hover:bg-rose-100 text-rose-800 border border-rose-300 px-2 xs:px-3 py-1 xs:py-1.5 rounded-xl xs:rounded-2xl font-black text-xs xs:text-sm transition-colors cursor-pointer"
             >
-              <Flame className="w-4 h-4 text-rose-500 fill-rose-500" />
-              <span className="hidden sm:inline">Daily Quest</span>
+              <Flame className="w-4 h-4 text-rose-500 fill-rose-500 shrink-0" />
+              <span className="hidden xs:inline">Daily Quest</span>
               <span className="bg-rose-600 text-white text-[10px] px-1.5 py-0.2 rounded-full font-black">
                 {completedTodayCount}/5
               </span>
@@ -301,7 +301,7 @@ export const App: React.FC = () => {
             {/* Mute Audio Toggle */}
             <button
               onClick={handleToggleMute}
-              className={`p-2 rounded-2xl border transition-colors cursor-pointer ${
+              className={`min-h-[40px] min-w-[40px] xs:min-h-[44px] xs:min-w-[44px] p-2 rounded-xl xs:rounded-2xl border transition-colors cursor-pointer flex items-center justify-center ${
                 isMuted
                   ? 'bg-rose-100 border-rose-300 text-rose-700'
                   : 'bg-stone-100 border-stone-300 text-stone-700'
@@ -314,7 +314,7 @@ export const App: React.FC = () => {
             {/* Background Music Toggle */}
             <button
               onClick={handleToggleMusic}
-              className={`p-2 rounded-2xl border transition-colors cursor-pointer ${
+              className={`min-h-[40px] min-w-[40px] xs:min-h-[44px] xs:min-w-[44px] p-2 rounded-xl xs:rounded-2xl border transition-colors cursor-pointer flex items-center justify-center ${
                 isMusicOn
                   ? 'bg-purple-100 border-purple-300 text-purple-700'
                   : 'bg-stone-100 border-stone-300 text-stone-400'
@@ -331,10 +331,10 @@ export const App: React.FC = () => {
                 soundEngine.playGentlePop();
                 setIsParentDashboardOpen(true);
               }}
-              className="flex items-center gap-1 bg-indigo-50 hover:bg-indigo-100 text-indigo-900 border border-indigo-300 px-2.5 sm:px-3 py-1 sm:py-1.5 rounded-2xl font-black text-xs sm:text-sm transition-colors cursor-pointer"
+              className="min-h-[40px] xs:min-h-[44px] flex items-center gap-1 xs:gap-1.5 bg-indigo-50 hover:bg-indigo-100 text-indigo-900 border border-indigo-300 px-2.5 xs:px-3 py-1 xs:py-1.5 rounded-xl xs:rounded-2xl font-black text-xs xs:text-sm transition-colors cursor-pointer shrink-0"
               title="Parent & Teacher Learning Analytics"
             >
-              <ShieldCheck className="w-4 h-4 text-indigo-600" />
+              <ShieldCheck className="w-4 h-4 text-indigo-600 shrink-0" />
               <span className="hidden md:inline">Parent Portal</span>
             </button>
           </div>
@@ -344,7 +344,7 @@ export const App: React.FC = () => {
       {/* ============================================================ */}
       {/* MAIN CONTAINER */}
       {/* ============================================================ */}
-      <main className="max-w-7xl mx-auto w-full px-3 sm:px-6 py-6 flex-1 flex flex-col gap-6 relative z-10">
+      <main className="max-w-7xl 2xl:max-w-[1600px] mx-auto w-full px-3 xs:px-4 md:px-6 lg:px-8 2xl:px-10 py-4 xs:py-5 md:py-6 lg:py-8 flex-1 flex flex-col gap-4 xs:gap-5 md:gap-6 2xl:gap-8 relative z-10">
         {/* ============================================================ */}
         {/* 🌟 PERSISTENT HERO: CONTINUE ADVENTURE & WELCOME BACK */}
         {/* ============================================================ */}
@@ -365,22 +365,22 @@ export const App: React.FC = () => {
         {/* ============================================================ */}
         {/* ⭐ TODAY'S ADVENTURE SECTION (5 Curated Games from Child's Class) */}
         {/* ============================================================ */}
-        <section className="bg-gradient-to-br from-amber-50 via-orange-50 to-yellow-50 p-4 sm:p-6 rounded-3xl border-3 border-amber-200 shadow-sm">
-          <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 mb-4">
+        <section className="bg-gradient-to-br from-amber-50 via-orange-50 to-yellow-50 p-3.5 xs:p-4 md:p-6 rounded-2xl xs:rounded-3xl border-2 xs:border-3 border-amber-200 shadow-sm">
+          <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 mb-3 xs:mb-4">
             <div>
-              <div className="inline-flex items-center gap-2 bg-amber-200/80 text-amber-950 px-3 py-0.5 rounded-full text-xs font-black mb-1">
+              <div className="inline-flex items-center gap-1.5 xs:gap-2 bg-amber-200/80 text-amber-950 px-2.5 xs:px-3 py-0.5 rounded-full text-[10px] xs:text-xs font-black mb-1">
                 <span>⭐ Daily Quest</span>
                 <span>•</span>
                 <span>{currentGradeDetails.icon} {currentGradeDetails.name}</span>
               </div>
-              <h2 className="text-xl sm:text-2xl font-black text-stone-900 flex items-center gap-2">
+              <h2 className="text-lg xs:text-xl md:text-2xl 2xl:text-3xl font-black text-stone-900 flex items-center gap-2">
                 <span>⭐ Today's Adventure</span>
               </h2>
             </div>
 
             {/* Progress Bar & Counter */}
-            <div className="w-full sm:w-64 space-y-1">
-              <div className="flex items-center justify-between text-xs font-black text-stone-700">
+            <div className="w-full sm:w-60 md:w-64 space-y-1">
+              <div className="flex items-center justify-between text-[11px] xs:text-xs font-black text-stone-700">
                 <span>Progress:</span>
                 <span className="text-amber-800">
                   {completedTodayCount} / 5 completed
@@ -397,8 +397,8 @@ export const App: React.FC = () => {
             </div>
           </div>
 
-          {/* 5 Curated Game Cards Row */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-3">
+          {/* 5 Curated Game Cards Row (Fluid 5-tier responsive grid) */}
+          <div className="grid grid-cols-1 xs:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-2.5 xs:gap-3 2xl:gap-4">
             {todaysAdventureGames.map((game, idx) => {
               const isDone = profileState.progress.completedGameIds.includes(game.id);
 
@@ -407,17 +407,17 @@ export const App: React.FC = () => {
                   key={game.id}
                   id={`today_game_${game.id}`}
                   whileHover={{ y: -4, scale: 1.02 }}
-                  className={`bg-white rounded-2xl p-3.5 border-2 shadow-xs flex flex-col justify-between transition-all ${
+                  className={`bg-white rounded-xl xs:rounded-2xl p-3 xs:p-3.5 2xl:p-4 border-2 shadow-xs flex flex-col justify-between transition-all ${
                     isDone ? 'border-emerald-300 bg-emerald-50/40' : 'border-amber-200 hover:border-amber-400'
                   }`}
                 >
                   <div>
                     <div className="flex items-center justify-between mb-1.5">
-                      <span className="text-[10px] font-black text-amber-800 bg-amber-100 px-2 py-0.5 rounded-md">
+                      <span className="text-[9px] xs:text-[10px] font-black text-amber-800 bg-amber-100 px-2 py-0.5 rounded-md">
                         Activity #{idx + 1}
                       </span>
                       {isDone && (
-                        <span className="text-[10px] font-black text-emerald-700 bg-emerald-100 px-2 py-0.5 rounded-full flex items-center gap-1">
+                        <span className="text-[9px] xs:text-[10px] font-black text-emerald-700 bg-emerald-100 px-2 py-0.5 rounded-full flex items-center gap-1">
                           <CheckCircle2 className="w-3 h-3 text-emerald-600" />
                           <span>Done</span>
                         </span>
@@ -425,11 +425,11 @@ export const App: React.FC = () => {
                     </div>
 
                     <div className="flex items-center gap-2.5 my-2">
-                      <span className="text-3xl p-1.5 bg-stone-50 rounded-xl border border-stone-200">
+                      <span className="text-2xl xs:text-3xl p-1.5 bg-stone-50 rounded-xl border border-stone-200 shrink-0">
                         {game.icon}
                       </span>
                       <div className="min-w-0">
-                        <h4 className="font-black text-xs text-stone-900 truncate">{game.title}</h4>
+                        <h4 className="font-black text-xs xs:text-sm text-stone-900 truncate">{game.title}</h4>
                         <span className="text-[10px] font-bold text-stone-500 truncate block">
                           {game.skill}
                         </span>
@@ -439,7 +439,7 @@ export const App: React.FC = () => {
 
                   <button
                     onClick={() => handleLaunchGame(game)}
-                    className={`mt-2 w-full py-1.5 px-3 rounded-xl font-black text-xs flex items-center justify-center gap-1 transition-all cursor-pointer ${
+                    className={`mt-2 w-full min-h-[42px] py-2 px-3 rounded-xl font-black text-xs flex items-center justify-center gap-1 transition-all cursor-pointer ${
                       isDone
                         ? 'bg-emerald-600 hover:bg-emerald-700 text-white shadow-xs'
                         : 'bg-amber-500 hover:bg-amber-600 text-white shadow-xs'
@@ -455,7 +455,7 @@ export const App: React.FC = () => {
         </section>
 
         {/* Filter Controls & Search */}
-        <section className="flex flex-col md:flex-row items-stretch md:items-center justify-between gap-3 bg-white p-3 rounded-2xl border-2 border-stone-200 shadow-sm">
+        <section className="flex flex-col md:flex-row items-stretch md:items-center justify-between gap-2.5 xs:gap-3 bg-white p-2.5 xs:p-3 2xl:p-4 rounded-xl xs:rounded-2xl border-2 border-stone-200 shadow-sm">
           {/* Category Tabs */}
           <div className="flex items-center gap-1.5 overflow-x-auto pb-1 md:pb-0 scrollbar-none">
             {[
@@ -472,7 +472,7 @@ export const App: React.FC = () => {
                   soundEngine.playGentlePop();
                   setActiveCategory(cat.id as GameCategory);
                 }}
-                className={`px-3 py-1.5 rounded-xl text-xs font-extrabold flex items-center gap-1.5 whitespace-nowrap transition-all cursor-pointer ${
+                className={`min-h-[38px] px-2.5 xs:px-3 py-1.5 rounded-xl text-xs font-extrabold flex items-center gap-1.5 whitespace-nowrap transition-all cursor-pointer ${
                   activeCategory === cat.id
                     ? 'bg-amber-500 text-white shadow-xs'
                     : 'bg-stone-100 hover:bg-stone-200 text-stone-700'
@@ -485,33 +485,33 @@ export const App: React.FC = () => {
           </div>
 
           {/* Search Input */}
-          <div className="relative min-w-48">
+          <div className="relative min-w-48 xs:min-w-56 md:min-w-64">
             <Search className="w-4 h-4 text-stone-400 absolute left-3 top-1/2 -translate-y-1/2" />
             <input
               type="text"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               placeholder="Search games, skills..."
-              className="w-full bg-stone-100 text-stone-800 text-xs font-semibold pl-9 pr-4 py-2 rounded-xl border border-stone-200 focus:outline-none focus:ring-2 focus:ring-amber-400"
+              className="w-full min-h-[38px] bg-stone-100 text-stone-800 text-xs font-semibold pl-9 pr-4 py-2 rounded-xl border border-stone-200 focus:outline-none focus:ring-2 focus:ring-amber-400"
             />
           </div>
         </section>
 
-        {/* 20-Game Grid for Child's Active Grade */}
+        {/* 20-Game Grid for Child's Active Grade (Fluid across 5 tiers: 1-col, 2-col, 3-col, 4-col, 5-col) */}
         <section>
-          <div className="flex items-center justify-between mb-4">
-            <h3 className="text-lg font-black text-stone-800 flex items-center gap-2">
+          <div className="flex items-center justify-between mb-3 xs:mb-4">
+            <h3 className="text-base xs:text-lg 2xl:text-xl font-black text-stone-800 flex items-center gap-2">
               <span>{currentGradeDetails.icon}</span>
               <span>
                 {currentGradeDetails.name} Adventure Zone ({filteredGames.length} Activities)
               </span>
             </h3>
-            <span className="text-xs font-bold text-stone-500">
+            <span className="text-[11px] xs:text-xs font-bold text-stone-500">
               Showing {filteredGames.length} of 20 Games
             </span>
           </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+          <div className="grid grid-cols-1 xs:grid-cols-2 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 gap-3 xs:gap-4 2xl:gap-5">
             {filteredGames.map((game) => {
               const isCompleted = profileState.progress.completedGameIds.includes(game.id);
 
@@ -519,22 +519,22 @@ export const App: React.FC = () => {
                 <motion.div
                   key={game.id}
                   id={`card_game_${game.id}`}
-                  whileHover={{ y: -6, scale: 1.02 }}
-                  className={`bg-white rounded-3xl p-5 border-3 transition-all flex flex-col justify-between shadow-sm hover:shadow-md ${
+                  whileHover={{ y: -5, scale: 1.02 }}
+                  className={`bg-white rounded-2xl xs:rounded-3xl p-4 xs:p-5 2xl:p-6 border-2 xs:border-3 transition-all flex flex-col justify-between shadow-sm hover:shadow-md ${
                     isCompleted ? 'border-emerald-300' : 'border-stone-200 hover:border-amber-400'
                   }`}
                 >
                   <div>
                     {/* Card Top: Number, Category & Done Badge */}
                     <div className="flex items-center justify-between mb-2">
-                      <span className="text-xs font-black text-amber-800 bg-amber-100 px-2 py-0.5 rounded-md">
+                      <span className="text-[10px] xs:text-xs font-black text-amber-800 bg-amber-100 px-2 py-0.5 rounded-md">
                         #{game.number}
                       </span>
-                      <span className="text-[10px] font-extrabold uppercase tracking-wider text-stone-500 bg-stone-100 px-2 py-0.5 rounded-full">
+                      <span className="text-[9px] xs:text-[10px] font-extrabold uppercase tracking-wider text-stone-500 bg-stone-100 px-2 py-0.5 rounded-full">
                         {game.category}
                       </span>
                       {isCompleted && (
-                        <span className="flex items-center gap-1 text-[10px] font-black text-emerald-700 bg-emerald-100 px-2 py-0.5 rounded-full">
+                        <span className="flex items-center gap-1 text-[9px] xs:text-[10px] font-black text-emerald-700 bg-emerald-100 px-2 py-0.5 rounded-full">
                           <CheckCircle2 className="w-3 h-3 text-emerald-600" />
                           <span>Done</span>
                         </span>
@@ -542,34 +542,34 @@ export const App: React.FC = () => {
                     </div>
 
                     {/* Big Icon & Title */}
-                    <div className="flex items-center gap-3 my-2">
-                      <span className="text-4xl p-2 bg-stone-50 rounded-2xl border border-stone-100 shadow-inner">
+                    <div className="flex items-center gap-2.5 xs:gap-3 my-2">
+                      <span className="text-3xl xs:text-4xl 2xl:text-5xl p-2 bg-stone-50 rounded-2xl border border-stone-100 shadow-inner shrink-0">
                         {game.icon}
                       </span>
-                      <div>
-                        <h4 className="font-black text-base text-stone-900 leading-tight">
+                      <div className="min-w-0">
+                        <h4 className="font-black text-sm xs:text-base 2xl:text-lg text-stone-900 leading-tight truncate">
                           {game.title}
                         </h4>
-                        <span className="text-[11px] font-bold text-amber-700">
+                        <span className="text-[10px] xs:text-[11px] font-bold text-amber-700">
                           {game.difficulty.toUpperCase()}
                         </span>
                       </div>
                     </div>
 
                     {/* Skill & Learning Objective */}
-                    <p className="text-xs text-stone-600 mt-2 font-medium line-clamp-2">
+                    <p className="text-xs 2xl:text-sm text-stone-600 mt-2 font-medium line-clamp-2 leading-relaxed">
                       {game.objective}
                     </p>
                   </div>
 
                   {/* Play Action Button */}
-                  <div className="mt-4 pt-3 border-t border-stone-100 flex items-center justify-between">
-                    <span className="text-[10px] font-bold text-stone-400 truncate max-w-28">
+                  <div className="mt-4 pt-3 border-t border-stone-100 flex items-center justify-between gap-2">
+                    <span className="text-[10px] xs:text-[11px] font-bold text-stone-400 truncate max-w-28 xs:max-w-32">
                       {game.skill}
                     </span>
                     <button
                       onClick={() => handleLaunchGame(game)}
-                      className="flex items-center gap-1.5 bg-amber-500 hover:bg-amber-600 text-white font-black text-xs px-3.5 py-2 rounded-xl shadow-xs transition-transform hover:scale-105 cursor-pointer"
+                      className="min-h-[40px] flex items-center gap-1.5 bg-amber-500 hover:bg-amber-600 text-white font-black text-xs xs:text-sm px-3 xs:px-4 py-2 rounded-xl shadow-xs transition-transform hover:scale-105 cursor-pointer shrink-0"
                     >
                       <Play className="w-3.5 h-3.5 fill-current" />
                       <span>Play Now</span>
@@ -583,18 +583,18 @@ export const App: React.FC = () => {
       </main>
 
       {/* Child Safety Footer */}
-      <footer className="bg-white border-t-2 border-stone-200 py-6 px-4 text-center text-xs text-stone-500 mt-auto relative z-10">
-        <div className="max-w-4xl mx-auto flex flex-col md:flex-row items-center justify-between gap-3">
+      <footer className="bg-white border-t-2 border-stone-200 py-4 xs:py-6 px-3 xs:px-4 md:px-6 2xl:px-8 text-center text-xs text-stone-500 mt-auto relative z-10">
+        <div className="max-w-7xl 2xl:max-w-[1600px] mx-auto flex flex-col md:flex-row items-center justify-between gap-3">
           <div className="flex items-center gap-2">
-            <ShieldCheck className="w-5 h-5 text-emerald-600" />
-            <span className="font-bold text-stone-700">
+            <ShieldCheck className="w-5 h-5 text-emerald-600 shrink-0" />
+            <span className="font-bold text-stone-700 text-xs xs:text-sm">
               100% Safe Early Learning • Ad-Free • Private On-Device Persistence
             </span>
           </div>
-          <div className="flex items-center gap-4 text-stone-600 font-medium">
+          <div className="flex flex-wrap items-center justify-center gap-2.5 xs:gap-4 text-stone-600 font-medium text-[11px] xs:text-xs">
             <span>✨ 160 Accredited Curriculum Games</span>
             <span>⭐ Nursery to Class 5</span>
-            <span>🎧 Web Audio Procedural Synthesis</span>
+            <span>🎧 Web Audio Synthesis</span>
           </div>
         </div>
       </footer>

@@ -99,71 +99,71 @@ export const OnboardingJourney: React.FC<OnboardingJourneyProps> = ({
   const selectedGradeInfo = GRADE_INFO[selectedGrade];
 
   return (
-    <div className="min-h-screen w-full relative flex items-center justify-center p-4 bg-gradient-to-br from-amber-50 via-sky-50 to-pink-50 overflow-hidden select-none">
+    <div className="min-h-screen w-full relative flex items-center justify-center p-3 xs:p-4 md:p-6 bg-gradient-to-br from-amber-50 via-sky-50 to-pink-50 overflow-hidden select-none antialiased">
       {/* Animated Floating Background Elements (clouds, stars, balloons) */}
       <div className="absolute inset-0 pointer-events-none overflow-hidden" aria-hidden="true">
         {/* Soft Glowing Gradient Orbs */}
-        <div className="absolute -top-24 -left-24 w-96 h-96 rounded-full bg-amber-300/30 blur-3xl" />
-        <div className="absolute top-1/2 -right-24 w-96 h-96 rounded-full bg-pink-300/30 blur-3xl" />
-        <div className="absolute -bottom-24 left-1/3 w-96 h-96 rounded-full bg-sky-300/30 blur-3xl" />
+        <div className="absolute -top-24 -left-24 w-72 xs:w-96 h-72 xs:h-96 rounded-full bg-amber-300/30 blur-3xl" />
+        <div className="absolute top-1/2 -right-24 w-72 xs:w-96 h-72 xs:h-96 rounded-full bg-pink-300/30 blur-3xl" />
+        <div className="absolute -bottom-24 left-1/3 w-72 xs:w-96 h-72 xs:h-96 rounded-full bg-sky-300/30 blur-3xl" />
 
         {/* Floating Clouds */}
         <motion.div
           animate={{ x: [0, 50, 0], y: [0, -10, 0] }}
           transition={{ duration: 12, repeat: Infinity, ease: 'easeInOut' }}
-          className="absolute top-10 left-10 text-5xl opacity-40"
+          className="absolute top-10 left-10 text-4xl xs:text-5xl opacity-40"
         >
           ☁️
         </motion.div>
         <motion.div
           animate={{ x: [0, -40, 0], y: [0, 15, 0] }}
           transition={{ duration: 15, repeat: Infinity, ease: 'easeInOut', delay: 1 }}
-          className="absolute top-24 right-16 text-6xl opacity-35"
+          className="absolute top-24 right-16 text-5xl xs:text-6xl opacity-35"
         >
           ☁️
         </motion.div>
         <motion.div
           animate={{ y: [0, -25, 0], rotate: [-5, 5, -5] }}
           transition={{ duration: 6, repeat: Infinity, ease: 'easeInOut' }}
-          className="absolute bottom-20 left-16 text-4xl opacity-50"
+          className="absolute bottom-20 left-16 text-3xl xs:text-4xl opacity-50"
         >
           🎈
         </motion.div>
         <motion.div
           animate={{ y: [0, -30, 0], rotate: [5, -5, 5] }}
           transition={{ duration: 7, repeat: Infinity, ease: 'easeInOut', delay: 2 }}
-          className="absolute top-1/3 right-10 text-4xl opacity-45"
+          className="absolute top-1/3 right-10 text-3xl xs:text-4xl opacity-45"
         >
           🦋
         </motion.div>
         <motion.div
           animate={{ scale: [1, 1.2, 1], rotate: [0, 180, 360] }}
           transition={{ duration: 10, repeat: Infinity, ease: 'linear' }}
-          className="absolute bottom-10 right-24 text-3xl opacity-40"
+          className="absolute bottom-10 right-24 text-2xl xs:text-3xl opacity-40"
         >
           ✨
         </motion.div>
       </div>
 
       {/* Main Centered Onboarding Modal Box */}
-      <div className="relative z-10 w-full max-w-2xl bg-white/95 backdrop-blur-xl rounded-[2.5rem] p-6 sm:p-10 shadow-2xl border-4 border-white ring-8 ring-amber-300/40">
+      <div className="relative z-10 w-full max-w-2xl 2xl:max-w-3xl bg-white/95 backdrop-blur-xl rounded-2xl xs:rounded-3xl md:rounded-[2.5rem] p-5 xs:p-6 md:p-8 2xl:p-10 shadow-2xl border-3 xs:border-4 border-white ring-4 xs:ring-8 ring-amber-300/40">
         {/* Progress Indicator dots at top */}
-        <div className="flex items-center justify-between mb-6 pb-4 border-b border-stone-100">
-          <div className="flex items-center gap-2">
-            <span className="text-2xl">🌈</span>
-            <span className="font-black text-sm text-stone-800 tracking-tight">Magic Learning Land</span>
+        <div className="flex items-center justify-between mb-4 xs:mb-6 pb-3 xs:pb-4 border-b border-stone-100">
+          <div className="flex items-center gap-1.5 xs:gap-2">
+            <span className="text-xl xs:text-2xl">🌈</span>
+            <span className="font-black text-xs xs:text-sm text-stone-800 tracking-tight">Magic Learning Land</span>
           </div>
 
-          <div className="flex items-center gap-1.5">
+          <div className="flex items-center gap-1 xs:gap-1.5">
             {[1, 2, 3, 4].map((s) => (
               <div
                 key={s}
-                className={`h-2.5 rounded-full transition-all duration-300 ${
+                className={`h-2 xs:h-2.5 rounded-full transition-all duration-300 ${
                   step === s
-                    ? 'w-8 bg-gradient-to-r from-amber-500 to-orange-500'
+                    ? 'w-6 xs:w-8 bg-gradient-to-r from-amber-500 to-orange-500'
                     : step > s
-                    ? 'w-3 bg-emerald-500'
-                    : 'w-2.5 bg-stone-200'
+                    ? 'w-2.5 xs:w-3 bg-emerald-500'
+                    : 'w-2 xs:w-2.5 bg-stone-200'
                 }`}
               />
             ))}
@@ -181,16 +181,16 @@ export const OnboardingJourney: React.FC<OnboardingJourneyProps> = ({
               animate={{ opacity: 1, scale: 1 }}
               exit={{ opacity: 0, scale: 0.95 }}
               transition={{ duration: 0.3 }}
-              className="text-center flex flex-col items-center gap-6"
+              className="text-center flex flex-col items-center gap-4 xs:gap-6"
             >
               {/* Animated Cute Mascot with speech bubble */}
               <div className="relative group cursor-pointer" onClick={() => soundEngine.playLetterChime()}>
                 <motion.div
                   animate={{ y: [0, -12, 0], rotate: [-2, 2, -2] }}
                   transition={{ duration: 2.4, repeat: Infinity, ease: 'easeInOut' }}
-                  className="w-32 h-32 sm:w-40 sm:h-40 rounded-full bg-gradient-to-tr from-amber-400 via-orange-400 to-pink-400 p-2 shadow-xl flex items-center justify-center border-4 border-white"
+                  className="w-28 h-28 xs:w-36 xs:h-36 md:w-40 md:h-40 rounded-full bg-gradient-to-tr from-amber-400 via-orange-400 to-pink-400 p-2 shadow-xl flex items-center justify-center border-4 border-white"
                 >
-                  <span className="text-6xl sm:text-7xl drop-shadow-md">🐰</span>
+                  <span className="text-5xl xs:text-6xl md:text-7xl drop-shadow-md">🐰</span>
                 </motion.div>
 
                 {/* Mascot Floating Badge */}
@@ -198,22 +198,22 @@ export const OnboardingJourney: React.FC<OnboardingJourneyProps> = ({
                   initial={{ scale: 0 }}
                   animate={{ scale: 1 }}
                   transition={{ delay: 0.2 }}
-                  className="absolute -bottom-2 -right-2 bg-emerald-500 text-white px-3 py-1 rounded-full text-xs font-black shadow-md flex items-center gap-1 border-2 border-white"
+                  className="absolute -bottom-2 -right-2 bg-emerald-500 text-white px-2.5 xs:px-3 py-0.5 xs:py-1 rounded-full text-[10px] xs:text-xs font-black shadow-md flex items-center gap-1 border-2 border-white"
                 >
                   <span>👋 Tap Me!</span>
                 </motion.div>
               </div>
 
               {/* Title & Tagline */}
-              <div className="space-y-2 max-w-md">
-                <h1 className="text-3xl sm:text-4xl font-black text-stone-900 tracking-tight flex items-center justify-center gap-2">
+              <div className="space-y-1.5 xs:space-y-2 max-w-md">
+                <h1 className="text-2xl xs:text-3xl md:text-4xl 2xl:text-5xl font-black text-stone-900 tracking-tight flex items-center justify-center gap-2">
                   <span>🌈</span>
                   <span>Magic Learning Land</span>
                 </h1>
-                <p className="text-base sm:text-lg text-stone-600 font-bold leading-relaxed">
+                <p className="text-sm xs:text-base md:text-lg text-stone-600 font-bold leading-relaxed">
                   “Let's start your learning adventure! 🚀”
                 </p>
-                <p className="text-xs text-stone-400 font-medium">
+                <p className="text-[11px] xs:text-xs text-stone-400 font-medium">
                   Fun games, cheerful sounds, phonics, numbers & joyful discovery!
                 </p>
               </div>
@@ -227,10 +227,10 @@ export const OnboardingJourney: React.FC<OnboardingJourneyProps> = ({
                   soundEngine.playSuccess();
                   setStep(2);
                 }}
-                className="w-full sm:w-auto min-w-64 py-4 px-8 rounded-3xl bg-gradient-to-r from-amber-500 via-orange-500 to-rose-500 text-white font-black text-lg sm:text-xl shadow-xl hover:shadow-2xl transition-all flex items-center justify-center gap-3 cursor-pointer border-2 border-white/50"
+                className="w-full xs:w-auto min-w-56 xs:min-w-64 min-h-[48px] xs:min-h-[54px] py-3.5 xs:py-4 px-6 xs:px-8 rounded-2xl xs:rounded-3xl bg-gradient-to-r from-amber-500 via-orange-500 to-rose-500 text-white font-black text-base xs:text-lg md:text-xl shadow-xl hover:shadow-2xl transition-all flex items-center justify-center gap-2 xs:gap-3 cursor-pointer border-2 border-white/50"
               >
                 <span>LET'S PLAY!</span>
-                <ArrowRight className="w-6 h-6 stroke-[3]" />
+                <ArrowRight className="w-5 h-5 xs:w-6 xs:h-6 stroke-[3]" />
               </motion.button>
             </motion.div>
           )}
@@ -245,23 +245,23 @@ export const OnboardingJourney: React.FC<OnboardingJourneyProps> = ({
               animate={{ opacity: 1, x: 0 }}
               exit={{ opacity: 0, x: -20 }}
               transition={{ duration: 0.3 }}
-              className="flex flex-col gap-6"
+              className="flex flex-col gap-4 xs:gap-6"
             >
               {/* Question Header */}
               <div className="text-center space-y-1">
-                <div className="inline-flex items-center gap-2 bg-amber-100 text-amber-900 px-3.5 py-1 rounded-full text-xs font-black">
+                <div className="inline-flex items-center gap-1.5 bg-amber-100 text-amber-900 px-3 py-0.5 xs:py-1 rounded-full text-[10px] xs:text-xs font-black">
                   <span>🎓 Step 1 of 2</span>
                 </div>
-                <h2 className="text-2xl sm:text-3xl font-black text-stone-900 tracking-tight">
+                <h2 className="text-xl xs:text-2xl md:text-3xl font-black text-stone-900 tracking-tight">
                   “What is your class?”
                 </h2>
-                <p className="text-xs sm:text-sm text-stone-500 font-medium">
+                <p className="text-[11px] xs:text-xs md:text-sm text-stone-500 font-medium">
                   Tap your grade to open your magical world of games!
                 </p>
               </div>
 
               {/* Main 8 Class Cards Grid */}
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 max-h-[52vh] sm:max-h-[58vh] overflow-y-auto pr-1 py-1">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-2.5 xs:gap-3 max-h-[50vh] md:max-h-[58vh] overflow-y-auto pr-1 py-1">
                 {(['nursery', 'lkg', 'ukg', 'class1', 'class2', 'class3', 'class4', 'class5'] as GradeLevel[]).map((gradeKey) => {
                   const info = GRADE_INFO[gradeKey];
                   const isSelected = selectedGrade === gradeKey;
@@ -273,14 +273,14 @@ export const OnboardingJourney: React.FC<OnboardingJourneyProps> = ({
                       whileHover={{ scale: 1.02, y: -2 }}
                       whileTap={{ scale: 0.98 }}
                       onClick={() => handleSelectGrade(gradeKey)}
-                      className={`relative p-3.5 sm:p-4 rounded-3xl text-left border-3 transition-all flex items-center gap-3.5 cursor-pointer shadow-sm ${
+                      className={`relative p-3 xs:p-3.5 md:p-4 rounded-2xl xs:rounded-3xl text-left border-3 transition-all flex items-center gap-3 cursor-pointer shadow-xs ${
                         isSelected
-                          ? `bg-gradient-to-r ${info.themeGradient} text-white border-white ring-4 ring-amber-400 shadow-lg`
+                          ? `bg-gradient-to-r ${info.themeGradient} text-white border-white ring-3 xs:ring-4 ring-amber-400 shadow-md`
                           : 'bg-stone-50 hover:bg-stone-100 text-stone-800 border-stone-200'
                       }`}
                     >
                       <div
-                        className={`w-12 h-12 sm:w-14 sm:h-14 rounded-2xl flex items-center justify-center text-2xl sm:text-3xl shrink-0 shadow-inner border-2 ${
+                        className={`w-11 h-11 xs:w-12 xs:h-12 md:w-14 md:h-14 rounded-xl xs:rounded-2xl flex items-center justify-center text-xl xs:text-2xl md:text-3xl shrink-0 shadow-inner border-2 ${
                           isSelected ? 'bg-white/20 border-white/40' : 'bg-white border-stone-200'
                         }`}
                       >
@@ -288,10 +288,10 @@ export const OnboardingJourney: React.FC<OnboardingJourneyProps> = ({
                       </div>
 
                       <div className="flex-1 min-w-0 pr-6">
-                        <div className="flex items-center gap-2">
-                          <h3 className="font-black text-base sm:text-lg tracking-tight truncate">{info.name}</h3>
+                        <div className="flex items-center gap-1.5 xs:gap-2">
+                          <h3 className="font-black text-sm xs:text-base md:text-lg tracking-tight truncate">{info.name}</h3>
                           <span
-                            className={`text-[10px] font-black px-2 py-0.5 rounded-full ${
+                            className={`text-[9px] xs:text-[10px] font-black px-1.5 xs:px-2 py-0.5 rounded-full ${
                               isSelected ? 'bg-white/30 text-white' : 'bg-stone-200 text-stone-700'
                             }`}
                           >
@@ -299,7 +299,7 @@ export const OnboardingJourney: React.FC<OnboardingJourneyProps> = ({
                           </span>
                         </div>
                         <p
-                          className={`text-xs font-semibold mt-0.5 leading-snug line-clamp-1 ${
+                          className={`text-[11px] xs:text-xs font-semibold mt-0.5 leading-snug line-clamp-1 ${
                             isSelected ? 'text-white/95' : 'text-stone-600'
                           }`}
                         >
@@ -312,9 +312,9 @@ export const OnboardingJourney: React.FC<OnboardingJourneyProps> = ({
                         <motion.div
                           initial={{ scale: 0 }}
                           animate={{ scale: 1 }}
-                          className="absolute top-3.5 right-3.5 bg-white text-amber-600 w-6 h-6 rounded-full flex items-center justify-center font-black shadow-md"
+                          className="absolute top-3 right-3 bg-white text-amber-600 w-5 h-5 xs:w-6 xs:h-6 rounded-full flex items-center justify-center font-black shadow-md"
                         >
-                          <CheckCircle2 className="w-4 h-4 text-emerald-600 fill-emerald-100" />
+                          <CheckCircle2 className="w-3.5 h-3.5 xs:w-4 xs:h-4 text-emerald-600 fill-emerald-100" />
                         </motion.div>
                       )}
                     </motion.button>
@@ -329,7 +329,7 @@ export const OnboardingJourney: React.FC<OnboardingJourneyProps> = ({
                     soundEngine.playGentlePop();
                     setStep(1);
                   }}
-                  className="px-4 py-2.5 rounded-2xl text-xs font-black text-stone-500 hover:text-stone-800 hover:bg-stone-100 transition-colors cursor-pointer"
+                  className="min-h-[44px] px-3.5 xs:px-4 py-2 xs:py-2.5 rounded-xl xs:rounded-2xl text-xs font-black text-stone-500 hover:text-stone-800 hover:bg-stone-100 transition-colors cursor-pointer"
                 >
                   ← Back
                 </button>
@@ -342,7 +342,7 @@ export const OnboardingJourney: React.FC<OnboardingJourneyProps> = ({
                     soundEngine.playSuccess();
                     setStep(3);
                   }}
-                  className="py-3.5 px-7 rounded-2xl bg-gradient-to-r from-amber-500 to-orange-500 text-white font-black text-base shadow-md hover:shadow-lg transition-all flex items-center gap-2 cursor-pointer border border-white/50"
+                  className="min-h-[44px] py-2.5 xs:py-3.5 px-5 xs:px-7 rounded-xl xs:rounded-2xl bg-gradient-to-r from-amber-500 to-orange-500 text-white font-black text-sm xs:text-base shadow-md hover:shadow-lg transition-all flex items-center gap-2 cursor-pointer border border-white/50"
                 >
                   <span>NEXT</span>
                   <ArrowRight className="w-4 h-4 stroke-[3]" />
@@ -361,20 +361,20 @@ export const OnboardingJourney: React.FC<OnboardingJourneyProps> = ({
               animate={{ opacity: 1, x: 0 }}
               exit={{ opacity: 0, x: -20 }}
               transition={{ duration: 0.3 }}
-              className="flex flex-col gap-6"
+              className="flex flex-col gap-4 xs:gap-6"
             >
               {/* Question Header & Mascot speech */}
-              <div className="text-center space-y-2">
-                <div className="inline-flex items-center gap-2 bg-sky-100 text-sky-900 px-3.5 py-1 rounded-full text-xs font-black">
+              <div className="text-center space-y-1.5 xs:space-y-2">
+                <div className="inline-flex items-center gap-1.5 bg-sky-100 text-sky-900 px-3 py-0.5 xs:py-1 rounded-full text-[10px] xs:text-xs font-black">
                   <span>👦 Step 2 of 2</span>
                 </div>
-                <h2 className="text-2xl sm:text-3xl font-black text-stone-900 tracking-tight">
+                <h2 className="text-xl xs:text-2xl md:text-3xl font-black text-stone-900 tracking-tight">
                   “What is your name?”
                 </h2>
 
                 {/* Friendly Character Speech Bubble */}
-                <div className="inline-flex items-center gap-3 bg-amber-50 border-2 border-amber-200 px-4 py-2 rounded-2xl text-amber-950 font-bold text-xs sm:text-sm shadow-xs">
-                  <span className="text-2xl animate-bounce">🐰</span>
+                <div className="inline-flex items-center gap-2 xs:gap-3 bg-amber-50 border-2 border-amber-200 px-3 xs:px-4 py-1.5 xs:py-2 rounded-xl xs:rounded-2xl text-amber-950 font-bold text-xs xs:text-sm shadow-xs">
+                  <span className="text-xl xs:text-2xl animate-bounce">🐰</span>
                   <span>“Hi! I'd love to know your name 😊”</span>
                   <button
                     type="button"
@@ -382,7 +382,7 @@ export const OnboardingJourney: React.FC<OnboardingJourneyProps> = ({
                     className="p-1 text-amber-700 hover:text-amber-900 cursor-pointer"
                     title="Listen"
                   >
-                    <Volume2 className="w-4 h-4" />
+                    <Volume2 className="w-3.5 h-3.5 xs:w-4 xs:h-4" />
                   </button>
                 </div>
               </div>
@@ -404,7 +404,7 @@ export const OnboardingJourney: React.FC<OnboardingJourneyProps> = ({
                     }}
                     maxLength={20}
                     placeholder="Type your name here"
-                    className="w-full text-center text-xl sm:text-2xl font-black py-4 px-6 rounded-3xl bg-stone-50 border-3 border-stone-300 text-stone-900 placeholder:text-stone-400 focus:outline-none focus:border-amber-500 focus:ring-4 focus:ring-amber-300/50 shadow-inner transition-all"
+                    className="w-full text-center text-lg xs:text-xl md:text-2xl font-black py-3 xs:py-4 px-4 xs:px-6 rounded-2xl xs:rounded-3xl bg-stone-50 border-3 border-stone-300 text-stone-900 placeholder:text-stone-400 focus:outline-none focus:border-amber-500 focus:ring-4 focus:ring-amber-300/50 shadow-inner transition-all"
                   />
                 </div>
 
@@ -413,7 +413,7 @@ export const OnboardingJourney: React.FC<OnboardingJourneyProps> = ({
                   <motion.div
                     initial={{ opacity: 0, y: -5 }}
                     animate={{ opacity: 1, y: 0 }}
-                    className="bg-rose-50 text-rose-800 border border-rose-200 px-4 py-1.5 rounded-full text-xs font-bold flex items-center gap-1.5 shadow-xs"
+                    className="bg-rose-50 text-rose-800 border border-rose-200 px-3 xs:px-4 py-1 xs:py-1.5 rounded-full text-xs font-bold flex items-center gap-1.5 shadow-xs"
                   >
                     <span>🌟</span>
                     <span>{nameError}</span>
@@ -423,10 +423,10 @@ export const OnboardingJourney: React.FC<OnboardingJourneyProps> = ({
 
               {/* Fun Avatar Buddy Selector */}
               <div className="space-y-2">
-                <p className="text-xs font-black text-stone-600 text-center uppercase tracking-wider">
+                <p className="text-[10px] xs:text-xs font-black text-stone-600 text-center uppercase tracking-wider">
                   Pick your adventure avatar:
                 </p>
-                <div className="flex items-center justify-center gap-2 flex-wrap">
+                <div className="flex items-center justify-center gap-1.5 xs:gap-2 flex-wrap">
                   {AVATAR_OPTIONS.map((av) => (
                     <button
                       key={av.id}
@@ -435,7 +435,7 @@ export const OnboardingJourney: React.FC<OnboardingJourneyProps> = ({
                         soundEngine.playPop(550);
                         setSelectedAvatar(av.emoji);
                       }}
-                      className={`w-11 h-11 rounded-2xl flex items-center justify-center text-2xl transition-all cursor-pointer border-2 ${
+                      className={`w-10 h-10 xs:w-11 xs:h-11 rounded-xl xs:rounded-2xl flex items-center justify-center text-xl xs:text-2xl transition-all cursor-pointer border-2 ${
                         selectedAvatar === av.emoji
                           ? 'bg-amber-400 border-amber-600 scale-110 shadow-md ring-2 ring-amber-300'
                           : 'bg-stone-100 hover:bg-stone-200 border-stone-200'
@@ -455,7 +455,7 @@ export const OnboardingJourney: React.FC<OnboardingJourneyProps> = ({
                     soundEngine.playGentlePop();
                     setStep(2);
                   }}
-                  className="px-4 py-2.5 rounded-2xl text-xs font-black text-stone-500 hover:text-stone-800 hover:bg-stone-100 transition-colors cursor-pointer"
+                  className="min-h-[44px] px-3.5 xs:px-4 py-2 xs:py-2.5 rounded-xl xs:rounded-2xl text-xs font-black text-stone-500 hover:text-stone-800 hover:bg-stone-100 transition-colors cursor-pointer"
                 >
                   ← Back
                 </button>
@@ -465,7 +465,7 @@ export const OnboardingJourney: React.FC<OnboardingJourneyProps> = ({
                   whileHover={{ scale: 1.04 }}
                   whileTap={{ scale: 0.96 }}
                   onClick={handleNameContinue}
-                  className="py-3.5 px-8 rounded-2xl bg-gradient-to-r from-amber-500 via-orange-500 to-rose-500 text-white font-black text-base shadow-md hover:shadow-lg transition-all flex items-center gap-2 cursor-pointer border border-white/50"
+                  className="min-h-[44px] py-2.5 xs:py-3.5 px-6 xs:px-8 rounded-xl xs:rounded-2xl bg-gradient-to-r from-amber-500 via-orange-500 to-rose-500 text-white font-black text-sm xs:text-base shadow-md hover:shadow-lg transition-all flex items-center gap-2 cursor-pointer border border-white/50"
                 >
                   <span>CONTINUE</span>
                   <ArrowRight className="w-4 h-4 stroke-[3]" />
@@ -484,16 +484,16 @@ export const OnboardingJourney: React.FC<OnboardingJourneyProps> = ({
               animate={{ opacity: 1, scale: 1 }}
               exit={{ opacity: 0, scale: 0.9 }}
               transition={{ duration: 0.4 }}
-              className="text-center flex flex-col items-center gap-6"
+              className="text-center flex flex-col items-center gap-4 xs:gap-6"
             >
               {/* Confetti & Sparkles celebration mascot */}
               <div className="relative">
                 <motion.div
                   animate={{ y: [0, -14, 0], scale: [1, 1.06, 1] }}
                   transition={{ duration: 1.8, repeat: Infinity, ease: 'easeInOut' }}
-                  className="w-32 h-32 sm:w-36 sm:h-36 rounded-full bg-gradient-to-tr from-yellow-300 via-amber-400 to-orange-500 p-2 shadow-2xl flex items-center justify-center border-4 border-white"
+                  className="w-28 h-28 xs:w-32 xs:h-32 md:w-36 md:h-36 rounded-full bg-gradient-to-tr from-yellow-300 via-amber-400 to-orange-500 p-2 shadow-2xl flex items-center justify-center border-4 border-white"
                 >
-                  <span className="text-6xl sm:text-7xl drop-shadow-md">{selectedAvatar}</span>
+                  <span className="text-5xl xs:text-6xl md:text-7xl drop-shadow-md">{selectedAvatar}</span>
                 </motion.div>
 
                 {/* Animated Stars radiating around */}
@@ -504,11 +504,11 @@ export const OnboardingJourney: React.FC<OnboardingJourneyProps> = ({
                     animate={{
                       opacity: [0, 1, 0.8],
                       scale: [0, 1.2, 1],
-                      x: [0, (idx % 2 === 0 ? 1 : -1) * (40 + idx * 15)],
-                      y: [0, -30 - idx * 10],
+                      x: [0, (idx % 2 === 0 ? 1 : -1) * (30 + idx * 15)],
+                      y: [0, -25 - idx * 10],
                     }}
                     transition={{ duration: 0.8, delay: 0.2 + idx * 0.1 }}
-                    className="absolute top-1/2 left-1/2 text-2xl sm:text-3xl pointer-events-none"
+                    className="absolute top-1/2 left-1/2 text-xl xs:text-2xl md:text-3xl pointer-events-none"
                   >
                     {emoji}
                   </motion.span>
@@ -516,16 +516,16 @@ export const OnboardingJourney: React.FC<OnboardingJourneyProps> = ({
               </div>
 
               {/* Personalized Welcome Messaging */}
-              <div className="space-y-2">
-                <h2 className="text-3xl sm:text-4xl font-black text-stone-900 tracking-tight">
+              <div className="space-y-1.5 xs:space-y-2">
+                <h2 className="text-2xl xs:text-3xl md:text-4xl 2xl:text-5xl font-black text-stone-900 tracking-tight">
                   “Welcome, <span className="text-amber-600">{childName || 'Explorer'}</span>! 🎉”
                 </h2>
-                <div className="inline-block bg-gradient-to-r from-amber-100 via-orange-100 to-pink-100 border-2 border-amber-300 px-5 py-2.5 rounded-3xl shadow-sm">
-                  <p className="text-sm sm:text-base font-extrabold text-amber-950">
+                <div className="inline-block bg-gradient-to-r from-amber-100 via-orange-100 to-pink-100 border-2 border-amber-300 px-4 xs:px-5 py-2 xs:py-2.5 rounded-2xl xs:rounded-3xl shadow-xs">
+                  <p className="text-xs xs:text-sm md:text-base font-extrabold text-amber-950">
                     You're going on a {selectedGradeInfo.icon} <span className="font-black underline decoration-amber-400">{selectedGradeInfo.name}</span> learning adventure!
                   </p>
                 </div>
-                <p className="text-xs text-stone-500 font-semibold mt-1">
+                <p className="text-[10px] xs:text-xs text-stone-500 font-semibold mt-1">
                   World: <span className="font-black text-stone-800">{selectedGradeInfo.worldEmoji} {selectedGradeInfo.worldName}</span> • 20 Verified Games Ready
                 </p>
               </div>
@@ -536,7 +536,7 @@ export const OnboardingJourney: React.FC<OnboardingJourneyProps> = ({
                 whileHover={{ scale: 1.06 }}
                 whileTap={{ scale: 0.94 }}
                 onClick={handleStartAdventure}
-                className="w-full sm:w-auto min-w-72 py-4 px-8 rounded-3xl bg-gradient-to-r from-emerald-500 via-teal-500 to-sky-500 text-white font-black text-lg sm:text-xl shadow-xl hover:shadow-2xl transition-all flex items-center justify-center gap-3 cursor-pointer border-2 border-white animate-pulse"
+                className="w-full xs:w-auto min-w-64 xs:min-w-72 min-h-[48px] xs:min-h-[54px] py-3.5 xs:py-4 px-6 xs:px-8 rounded-2xl xs:rounded-3xl bg-gradient-to-r from-emerald-500 via-teal-500 to-sky-500 text-white font-black text-base xs:text-lg md:text-xl shadow-xl hover:shadow-2xl transition-all flex items-center justify-center gap-2 xs:gap-3 cursor-pointer border-2 border-white animate-pulse"
               >
                 <span>START MY ADVENTURE 🚀</span>
               </motion.button>
