@@ -1,6 +1,6 @@
 {
-  "name": "Magic Learning Land – Nursery Adventure",
-  "description": "A fun, colorful and child-friendly educational game for nursery children (ages 3–4) covering Colors, Shapes, Animal Sounds, and Counting with cheerful rewards and voice narration.",
+  "name": "Magic Learning Land – LKG Adventure",
+  "description": "A fun, colorful and child-friendly educational adventure game for LKG and Nursery children (ages 4–5) featuring ABC World, Number World 1–20, Object World, Pattern World, and daily challenges.",
   "requestFramePermissions": [],
   "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
 }

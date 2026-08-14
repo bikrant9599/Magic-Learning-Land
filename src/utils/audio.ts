@@ -402,7 +402,58 @@ class SoundEngine {
     }
   }
 
+  // Coin Pickup Sound
+  public playCoin() {
+    if (!this.soundEnabled) return;
+    try {
+      const ctx = this.initCtx();
+      if (!ctx) return;
+
+      const osc = ctx.createOscillator();
+      const gain = ctx.createGain();
+
+      osc.type = 'sine';
+      osc.frequency.setValueAtTime(987.77, ctx.currentTime); // B5
+      osc.frequency.setValueAtTime(1318.51, ctx.currentTime + 0.08); // E6
+
+      gain.gain.setValueAtTime(0.22, ctx.currentTime);
+      gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.35);
+
+      osc.connect(gain);
+      gain.connect(ctx.destination);
+
+      osc.start();
+      osc.stop(ctx.currentTime + 0.36);
+    } catch {}
+  }
+
+  // Phonics letter chime
+  public playLetterChime(freq = 600) {
+    if (!this.soundEnabled) return;
+    try {
+      const ctx = this.initCtx();
+      if (!ctx) return;
+
+      const osc = ctx.createOscillator();
+      const gain = ctx.createGain();
+
+      osc.type = 'triangle';
+      osc.frequency.setValueAtTime(freq, ctx.currentTime);
+      osc.frequency.exponentialRampToValueAtTime(freq * 1.5, ctx.currentTime + 0.15);
+
+      gain.gain.setValueAtTime(0.25, ctx.currentTime);
+      gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.25);
+
+      osc.connect(gain);
+      gain.connect(ctx.destination);
+
+      osc.start();
+      osc.stop(ctx.currentTime + 0.28);
+    } catch {}
+  }
+
   // Kid-Friendly Speech Synthesis
+
   public speak(text: string, force = false) {
     if (!this.voiceEnabled && !force) return;
     if (!('speechSynthesis' in window)) return;
