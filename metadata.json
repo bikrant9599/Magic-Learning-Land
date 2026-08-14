@@ -1,0 +1,6 @@
+{
+  "name": "Magic Learning Land – Nursery Adventure",
+  "description": "A fun, colorful and child-friendly educational game for nursery children (ages 3–4) covering Colors, Shapes, Animal Sounds, and Counting with cheerful rewards and voice narration.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
