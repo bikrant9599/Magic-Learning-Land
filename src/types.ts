@@ -1,4 +1,13 @@
-export type GradeLevel = 'nursery' | 'lkg' | 'ukg' | 'class1';
+export type GradeLevel = 'nursery' | 'lkg' | 'ukg' | 'class1' | 'class2' | 'class3' | 'class4' | 'class5';
+
+export interface UserProfile {
+  name: string;
+  grade: GradeLevel;
+  avatarEmoji: string;
+  isOnboarded: boolean;
+  streakDays: number;
+  lastVisitDate: string;
+}
 
 export type GameCategory = 'all' | 'english' | 'maths' | 'logic' | 'science' | 'creative';
 

@@ -1,4 +1,4 @@
-import { GameMetadata } from '../types';
+import { GameMetadata, GradeLevel } from '../types';
 
 export const ALL_GAMES: GameMetadata[] = [
   // ==========================================
@@ -1218,46 +1218,142 @@ export const ALL_GAMES: GameMetadata[] = [
   },
 ];
 
-// Grade Titles & Metadata
-export const GRADE_INFO = {
+// Grade Titles & Metadata with World Names & Onboarding Prompts
+export interface GradeDetail {
+  name: string;
+  ageRange: string;
+  icon: string;
+  worldName: string;
+  worldEmoji: string;
+  onboardingDesc: string;
+  tagline: string;
+  themeGradient: string;
+  bgGradient: string;
+  bannerColor: string;
+  cardBorder: string;
+  accentColor: string;
+  worldTheme: string;
+}
+
+export const GRADE_INFO: Record<GradeLevel, GradeDetail> = {
   nursery: {
     name: 'Nursery',
     ageRange: 'Ages 3–4',
     icon: '🐣',
+    worldName: 'Baby Farm',
+    worldEmoji: '🚜',
+    onboardingDesc: "Let's learn colors, shapes & numbers!",
     tagline: 'Colors, Shapes, Sounds & Early Discovery',
     themeGradient: 'from-pink-500 via-rose-400 to-amber-400',
+    bgGradient: 'from-amber-50 via-rose-50 to-pink-50',
     bannerColor: 'bg-rose-500',
     cardBorder: 'border-rose-300',
     accentColor: 'text-rose-600',
+    worldTheme: 'Pastel Farm & Meadow',
   },
   lkg: {
     name: 'LKG',
     ageRange: 'Ages 4–5',
     icon: '🐥',
+    worldName: 'Rainbow Village',
+    worldEmoji: '🌈',
+    onboardingDesc: "Let's explore ABC & counting!",
     tagline: 'Alphabet, Numbers 1–20, Patterns & Animals',
     themeGradient: 'from-sky-500 via-indigo-400 to-emerald-400',
+    bgGradient: 'from-sky-50 via-indigo-50 to-emerald-50',
     bannerColor: 'bg-sky-500',
     cardBorder: 'border-sky-300',
     accentColor: 'text-sky-600',
+    worldTheme: 'Bright Rainbow Village',
   },
   ukg: {
     name: 'UKG',
     ageRange: 'Ages 5–6',
     icon: '🦋',
+    worldName: 'Learning Forest',
+    worldEmoji: '🌲',
+    onboardingDesc: "Let's discover words & maths!",
     tagline: 'CVC Reading, Numbers to 100, Math & Logic',
     themeGradient: 'from-emerald-500 via-teal-400 to-purple-500',
+    bgGradient: 'from-emerald-50 via-teal-50 to-amber-50',
     bannerColor: 'bg-emerald-600',
     cardBorder: 'border-emerald-300',
     accentColor: 'text-emerald-700',
+    worldTheme: 'Enchanted Learning Forest',
   },
   class1: {
     name: 'Class 1',
     ageRange: 'Ages 6–7',
     icon: '🚀',
+    worldName: 'Space Academy',
+    worldEmoji: '🪐',
+    onboardingDesc: "Let's become a learning champion!",
     tagline: 'Grammar, Shopping Math, Clocks, Science & GK',
     themeGradient: 'from-purple-600 via-indigo-500 to-amber-500',
+    bgGradient: 'from-indigo-950/20 via-purple-50 to-amber-50',
     bannerColor: 'bg-purple-600',
     cardBorder: 'border-purple-300',
     accentColor: 'text-purple-700',
+    worldTheme: 'Cosmic Space Academy',
+  },
+  class2: {
+    name: 'Class 2',
+    ageRange: 'Ages 7–8',
+    icon: '🏰',
+    worldName: 'Castle Kingdom',
+    worldEmoji: '👑',
+    onboardingDesc: "Let's master stories, times tables & inventions!",
+    tagline: 'Multiplication, Creative Stories & Logic Quests',
+    themeGradient: 'from-amber-500 via-orange-500 to-rose-500',
+    bgGradient: 'from-amber-50 via-orange-50 to-yellow-50',
+    bannerColor: 'bg-amber-600',
+    cardBorder: 'border-amber-300',
+    accentColor: 'text-amber-700',
+    worldTheme: 'Medieval Wonder Castle',
+  },
+  class3: {
+    name: 'Class 3',
+    ageRange: 'Ages 8–9',
+    icon: '🌊',
+    worldName: 'Ocean Explorer',
+    worldEmoji: '🐬',
+    onboardingDesc: "Let's dive into fractions, science & mystery maps!",
+    tagline: 'Fractions, Ecosystems & World Geography',
+    themeGradient: 'from-cyan-500 via-blue-500 to-teal-500',
+    bgGradient: 'from-cyan-50 via-blue-50 to-teal-50',
+    bannerColor: 'bg-blue-600',
+    cardBorder: 'border-cyan-300',
+    accentColor: 'text-cyan-700',
+    worldTheme: 'Deep Sea Discovery',
+  },
+  class4: {
+    name: 'Class 4',
+    ageRange: 'Ages 9–10',
+    icon: '🌋',
+    worldName: 'Jungle Safari',
+    worldEmoji: '🐅',
+    onboardingDesc: "Let's explore geometry, wildlife & word wizardry!",
+    tagline: 'Geometry, Natural Sciences & Advanced Grammar',
+    themeGradient: 'from-emerald-600 via-green-500 to-yellow-500',
+    bgGradient: 'from-emerald-50 via-lime-50 to-yellow-50',
+    bannerColor: 'bg-emerald-700',
+    cardBorder: 'border-emerald-300',
+    accentColor: 'text-emerald-800',
+    worldTheme: 'Wild Jungle Expedition',
+  },
+  class5: {
+    name: 'Class 5',
+    ageRange: 'Ages 10–11',
+    icon: '🌌',
+    worldName: 'Cosmic Odyssey',
+    worldEmoji: '🌠',
+    onboardingDesc: "Let's conquer advanced logic, science & problem solving!",
+    tagline: 'Pre-Algebra, Scientific Method & Critical Thinking',
+    themeGradient: 'from-violet-600 via-purple-600 to-pink-500',
+    bgGradient: 'from-violet-50 via-purple-50 to-pink-50',
+    bannerColor: 'bg-violet-700',
+    cardBorder: 'border-violet-300',
+    accentColor: 'text-violet-800',
+    worldTheme: 'Galaxy Quantum Station',
   },
 };
