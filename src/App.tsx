@@ -363,66 +363,6 @@ export const App: React.FC = () => {
         />
 
         {/* ============================================================ */}
-        {/* GRADE SELECTOR TABS (NURSERY TO CLASS 5 - 8 WORLDS) */}
-        {/* ============================================================ */}
-        <section className="bg-white p-2.5 sm:p-4 rounded-3xl border-2 border-stone-200 shadow-sm">
-          <div className="flex items-center justify-between mb-2.5 px-1">
-            <span className="text-xs font-black text-stone-500 uppercase tracking-wider">
-              Explore All 8 Learning Worlds (Nursery – Class 5):
-            </span>
-            <span className="text-xs font-bold text-amber-700 hidden sm:inline">
-              {currentGradeDetails.tagline}
-            </span>
-          </div>
-
-          <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-4 gap-2">
-            {(['nursery', 'lkg', 'ukg', 'class1', 'class2', 'class3', 'class4', 'class5'] as GradeLevel[]).map((gradeKey) => {
-              const info = GRADE_INFO[gradeKey];
-              const isSelected = currentGrade === gradeKey;
-
-              return (
-                <motion.button
-                  key={gradeKey}
-                  id={`tab_grade_${gradeKey}`}
-                  whileHover={{ scale: 1.02 }}
-                  whileTap={{ scale: 0.98 }}
-                  onClick={() => {
-                    soundEngine.playGentlePop();
-                    setCurrentGrade(gradeKey);
-                  }}
-                  className={`p-2.5 sm:p-3 rounded-2xl flex items-center gap-2.5 transition-all text-left cursor-pointer ${
-                    isSelected
-                      ? `bg-gradient-to-r ${info.themeGradient} text-white shadow-md ring-4 ring-amber-300/50`
-                      : 'bg-stone-50 hover:bg-stone-100 text-stone-800 border border-stone-200'
-                  }`}
-                >
-                  <span className="text-2xl sm:text-3xl shrink-0 drop-shadow">{info.icon}</span>
-                  <div className="flex-1 min-w-0">
-                    <div className="flex items-center justify-between gap-1">
-                      <h3 className="font-black text-xs sm:text-sm truncate">{info.name}</h3>
-                      <span
-                        className={`text-[9px] font-extrabold px-1.5 py-0.2 rounded-md shrink-0 ${
-                          isSelected ? 'bg-white/30 text-white' : 'bg-stone-200 text-stone-700'
-                        }`}
-                      >
-                        {info.ageRange}
-                      </span>
-                    </div>
-                    <p
-                      className={`text-[10px] sm:text-xs truncate font-bold ${
-                        isSelected ? 'text-white/95' : 'text-stone-500'
-                      }`}
-                    >
-                      {info.worldEmoji} {info.worldName}
-                    </p>
-                  </div>
-                </motion.button>
-              );
-            })}
-          </div>
-        </section>
-
-        {/* ============================================================ */}
         {/* ⭐ TODAY'S ADVENTURE SECTION (5 Curated Games from Child's Class) */}
         {/* ============================================================ */}
         <section className="bg-gradient-to-br from-amber-50 via-orange-50 to-yellow-50 p-4 sm:p-6 rounded-3xl border-3 border-amber-200 shadow-sm">
