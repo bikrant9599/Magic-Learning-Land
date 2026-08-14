@@ -80,7 +80,7 @@ export const ParentTeacherDashboard: React.FC<ParentTeacherDashboardProps> = ({
           {[
             { id: 'overview', label: '📊 Overview & KPIs' },
             { id: 'subjects', label: '🧠 Subject Mastery' },
-            { id: 'grades', label: '🐣 Grade Progress (Nursery–Class 1)' },
+            { id: 'grades', label: '🐣 Grade Progress (Nursery–Class 5)' },
             { id: 'safety', label: '🛡️ Safety & Privacy Pledge' },
           ].map((tab) => (
             <button
@@ -241,12 +241,13 @@ export const ParentTeacherDashboard: React.FC<ParentTeacherDashboardProps> = ({
 
           {activeTab === 'grades' && (
             <div className="space-y-4">
-              <h3 className="font-black text-lg text-stone-900">4 Core Developmental Levels (80 Games Total)</h3>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                {(['nursery', 'lkg', 'ukg', 'class1'] as GradeLevel[]).map((grd) => {
+              <h3 className="font-black text-lg text-stone-900">8 Progressive Developmental Worlds (160 Games Total)</h3>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 max-h-[55vh] overflow-y-auto pr-1">
+                {(['nursery', 'lkg', 'ukg', 'class1', 'class2', 'class3', 'class4', 'class5'] as GradeLevel[]).map((grd) => {
                   const info = GRADE_INFO[grd];
                   const gradeGames = ALL_GAMES.filter((g) => g.grade === grd);
                   const completedInGrade = gradeGames.filter((g) => stats.completedGameIds.includes(g.id)).length;
+                  const totalInGrade = gradeGames.length || 20;
 
                   return (
                     <div key={grd} className="p-4 rounded-2xl border-2 border-stone-200 bg-stone-50 flex flex-col justify-between">
@@ -254,7 +255,7 @@ export const ParentTeacherDashboard: React.FC<ParentTeacherDashboardProps> = ({
                         <div className="flex items-center gap-2 mb-1">
                           <span className="text-3xl">{info.icon}</span>
                           <div>
-                            <h4 className="font-black text-base text-stone-900">{info.name}</h4>
+                            <h4 className="font-black text-base text-stone-900">{info.name} • {info.worldEmoji} {info.worldName}</h4>
                             <span className="text-xs font-bold text-stone-500">{info.ageRange}</span>
                           </div>
                         </div>
@@ -263,13 +264,13 @@ export const ParentTeacherDashboard: React.FC<ParentTeacherDashboardProps> = ({
 
                       <div className="bg-white p-2.5 rounded-xl border border-stone-200">
                         <div className="flex justify-between text-xs font-bold mb-1">
-                          <span>Progress: {completedInGrade} / {gradeGames.length} Games</span>
-                          <span>{Math.round((completedInGrade / gradeGames.length) * 100)}%</span>
+                          <span>Progress: {completedInGrade} / {totalInGrade} Games</span>
+                          <span>{Math.round((completedInGrade / totalInGrade) * 100)}%</span>
                         </div>
                         <div className="w-full h-2 bg-stone-200 rounded-full overflow-hidden">
                           <div
                             className="h-full bg-indigo-600 rounded-full transition-all"
-                            style={{ width: `${(completedInGrade / gradeGames.length) * 100}%` }}
+                            style={{ width: `${(completedInGrade / totalInGrade) * 100}%` }}
                           />
                         </div>
                       </div>
@@ -326,39 +327,54 @@ export const ParentTeacherDashboard: React.FC<ParentTeacherDashboardProps> = ({
                 </div>
               </div>
 
-              {/* Reset progress option */}
+              {/* Reset progress option with explicit modal protection */}
               <div className="bg-stone-100 p-4 rounded-2xl border border-stone-300 flex items-center justify-between">
                 <div>
                   <h4 className="font-bold text-stone-900 text-sm">Reset Student Progress</h4>
                   <p className="text-xs text-stone-600">Clears stars, coins, and completion records for a fresh start.</p>
                 </div>
-                {showResetConfirm ? (
-                  <div className="flex gap-2">
-                    <button
-                      onClick={() => {
-                        onResetProgress();
-                        setShowResetConfirm(false);
-                      }}
-                      className="bg-rose-600 text-white px-3 py-1.5 rounded-xl font-black text-xs hover:bg-rose-700"
-                    >
-                      Confirm Reset
-                    </button>
-                    <button
-                      onClick={() => setShowResetConfirm(false)}
-                      className="bg-stone-200 text-stone-800 px-3 py-1.5 rounded-xl font-bold text-xs"
-                    >
-                      Cancel
-                    </button>
-                  </div>
-                ) : (
-                  <button
-                    onClick={() => setShowResetConfirm(true)}
-                    className="bg-stone-200 hover:bg-stone-300 text-stone-700 font-bold text-xs px-4 py-2 rounded-xl transition-colors"
-                  >
-                    Reset Records
-                  </button>
-                )}
+                <button
+                  id="btn_open_reset_confirm"
+                  onClick={() => setShowResetConfirm(true)}
+                  className="bg-stone-200 hover:bg-rose-100 hover:text-rose-700 text-stone-700 font-bold text-xs px-4 py-2 rounded-xl transition-colors cursor-pointer"
+                >
+                  Reset Records
+                </button>
               </div>
+
+              {/* Explicit Reset Confirmation Dialog */}
+              {showResetConfirm && (
+                <div className="fixed inset-0 z-60 bg-stone-900/70 backdrop-blur-sm flex items-center justify-center p-4">
+                  <div className="bg-white rounded-3xl p-6 max-w-sm w-full shadow-2xl border-4 border-rose-400 text-center space-y-4">
+                    <span className="text-4xl">⚠️</span>
+                    <h4 className="text-lg font-black text-stone-900">
+                      Are you sure you want to reset this player's progress?
+                    </h4>
+                    <p className="text-xs text-stone-600 font-medium">
+                      This will reset stars, coins, and completed games back to the beginning. This action cannot be undone.
+                    </p>
+                    <div className="flex items-center justify-center gap-3 pt-2">
+                      <button
+                        id="btn_cancel_reset"
+                        onClick={() => setShowResetConfirm(false)}
+                        className="flex-1 py-2.5 px-4 rounded-xl bg-stone-100 hover:bg-stone-200 text-stone-800 font-black text-xs cursor-pointer"
+                      >
+                        Cancel
+                      </button>
+                      <button
+                        id="btn_confirm_reset_progress"
+                        onClick={() => {
+                          onResetProgress();
+                          setShowResetConfirm(false);
+                        }}
+                        className="flex-1 py-2.5 px-4 rounded-xl bg-rose-600 hover:bg-rose-700 text-white font-black text-xs cursor-pointer shadow-md"
+                      >
+                        Reset Progress
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              )}
             </div>
           )}
         </div>

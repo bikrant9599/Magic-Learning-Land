@@ -1,6 +1,6 @@
 {
-  "name": "Magic Learning Land – UKG Adventure",
-  "description": "Comprehensive educational adventure platform featuring 80 verified interactive mini-games across Nursery, LKG, UKG, and Class 1, with verified animal audio synthesis, daily learning missions, parent analytics, and rewards.",
+  "name": "Magic Learning Land – Nursery to Class 5",
+  "description": "Comprehensive educational adventure platform featuring 160 verified interactive mini-games across Nursery, LKG, UKG, Class 1, Class 2, Class 3, Class 4, and Class 5, with curriculum-aligned subjects, daily missions, parent analytics, and 8 magical learning worlds.",
   "requestFramePermissions": [],
   "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
 }

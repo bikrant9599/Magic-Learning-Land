@@ -45,6 +45,7 @@ import {
   GK_QUESTIONS,
   NOUN_VERB_ITEMS,
 } from '../../data/gameBank';
+import { getCurriculumItem } from '../../data/curriculumGamesRegistry';
 
 interface InteractiveUniversalGameProps {
   game: GameMetadata;
@@ -1603,9 +1604,77 @@ export const InteractiveUniversalGame: React.FC<InteractiveUniversalGameProps> =
       }
 
       // ----------------------------------------------------
-      // DEFAULT FALLBACK: RICH INTERACTIVE QUESTION CARD
+      // DEFAULT / CURRICULUM GAME ENGINE (CLASSES 2 - 5)
       // ----------------------------------------------------
       default: {
+        const curriculumItem = getCurriculumItem(game.componentKey, currentRound);
+
+        if (curriculumItem) {
+          return (
+            <div className="flex flex-col items-center w-full max-w-xl">
+              {/* Question / Card Container */}
+              <div className="bg-white p-5 sm:p-6 rounded-3xl text-center w-full mb-6 border-4 border-amber-300 shadow-xl">
+                <div className="flex items-center justify-center gap-2 mb-2">
+                  <span className="text-4xl">{curriculumItem.contextEmoji || game.icon}</span>
+                  <span className="text-xs font-black uppercase tracking-wider px-3 py-1 bg-amber-100 text-amber-800 rounded-full">
+                    {game.category} • {game.title}
+                  </span>
+                </div>
+
+                {/* Optional Passage for Reading Comprehension */}
+                {curriculumItem.passage && (
+                  <div className="bg-amber-50/70 border-2 border-amber-200/80 rounded-2xl p-4 mb-4 text-left shadow-inner">
+                    <div className="flex items-center gap-1.5 text-amber-900 font-extrabold text-xs mb-1.5 uppercase tracking-wider">
+                      <span>📖</span> Reading Passage:
+                    </div>
+                    <p className="text-stone-800 text-sm sm:text-base leading-relaxed font-medium">
+                      {curriculumItem.passage}
+                    </p>
+                  </div>
+                )}
+
+                {/* Main Question Prompt */}
+                <h3 className="text-lg sm:text-xl md:text-2xl font-black text-stone-800 leading-snug">
+                  {curriculumItem.prompt}
+                </h3>
+              </div>
+
+              {/* Multiple Choice Options */}
+              <div className="grid grid-cols-1 gap-3.5 w-full">
+                {curriculumItem.options.map((opt, idx) => (
+                  <motion.button
+                    key={opt.id || idx}
+                    id={`opt_btn_${idx}`}
+                    disabled={isAnswered}
+                    whileHover={!isAnswered ? { scale: 1.02 } : {}}
+                    whileTap={!isAnswered ? { scale: 0.98 } : {}}
+                    onClick={() =>
+                      handleResult(
+                        opt.isCorrect,
+                        opt.isCorrect
+                          ? `Awesome work! 🎉 ${curriculumItem.explanation || 'You got the correct answer!'}`
+                          : `Not quite! Let's try again 😊. ${curriculumItem.explanation || 'Keep going!'}`
+                      )
+                    }
+                    className={`p-4 rounded-2xl border-4 font-bold text-sm sm:text-base text-left transition-all shadow-md cursor-pointer flex items-center justify-between gap-3 ${
+                      isAnswered
+                        ? opt.isCorrect
+                          ? 'bg-emerald-100 border-emerald-500 text-emerald-950 font-black'
+                          : 'bg-stone-50 border-stone-200 text-stone-400'
+                        : 'bg-white hover:bg-amber-50/70 border-stone-200 hover:border-amber-400 text-stone-800'
+                    }`}
+                  >
+                    <span>{opt.text}</span>
+                    <span className="text-xs font-black px-2.5 py-1 rounded-full bg-stone-100 text-stone-600 border border-stone-200 shrink-0">
+                      {['A', 'B', 'C', 'D'][idx] || idx + 1}
+                    </span>
+                  </motion.button>
+                ))}
+              </div>
+            </div>
+          );
+        }
+
         const options = [
           { text: `Option 1: Correct Answer`, isCorrect: true },
           { text: `Option 2: Alternative Choice`, isCorrect: false },

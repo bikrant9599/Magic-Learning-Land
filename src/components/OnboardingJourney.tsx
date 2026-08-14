@@ -260,9 +260,9 @@ export const OnboardingJourney: React.FC<OnboardingJourneyProps> = ({
                 </p>
               </div>
 
-              {/* Main 4 Foundation Class Cards */}
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
-                {(['nursery', 'lkg', 'ukg', 'class1'] as GradeLevel[]).map((gradeKey) => {
+              {/* Main 8 Class Cards Grid */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 max-h-[52vh] sm:max-h-[58vh] overflow-y-auto pr-1 py-1">
+                {(['nursery', 'lkg', 'ukg', 'class1', 'class2', 'class3', 'class4', 'class5'] as GradeLevel[]).map((gradeKey) => {
                   const info = GRADE_INFO[gradeKey];
                   const isSelected = selectedGrade === gradeKey;
 
@@ -273,14 +273,14 @@ export const OnboardingJourney: React.FC<OnboardingJourneyProps> = ({
                       whileHover={{ scale: 1.02, y: -2 }}
                       whileTap={{ scale: 0.98 }}
                       onClick={() => handleSelectGrade(gradeKey)}
-                      className={`relative p-4 rounded-3xl text-left border-3 transition-all flex items-start gap-4 cursor-pointer shadow-sm ${
+                      className={`relative p-3.5 sm:p-4 rounded-3xl text-left border-3 transition-all flex items-center gap-3.5 cursor-pointer shadow-sm ${
                         isSelected
                           ? `bg-gradient-to-r ${info.themeGradient} text-white border-white ring-4 ring-amber-400 shadow-lg`
                           : 'bg-stone-50 hover:bg-stone-100 text-stone-800 border-stone-200'
                       }`}
                     >
                       <div
-                        className={`w-14 h-14 rounded-2xl flex items-center justify-center text-3xl shrink-0 shadow-inner border-2 ${
+                        className={`w-12 h-12 sm:w-14 sm:h-14 rounded-2xl flex items-center justify-center text-2xl sm:text-3xl shrink-0 shadow-inner border-2 ${
                           isSelected ? 'bg-white/20 border-white/40' : 'bg-white border-stone-200'
                         }`}
                       >
@@ -289,7 +289,7 @@ export const OnboardingJourney: React.FC<OnboardingJourneyProps> = ({
 
                       <div className="flex-1 min-w-0 pr-6">
                         <div className="flex items-center gap-2">
-                          <h3 className="font-black text-lg tracking-tight truncate">{info.name}</h3>
+                          <h3 className="font-black text-base sm:text-lg tracking-tight truncate">{info.name}</h3>
                           <span
                             className={`text-[10px] font-black px-2 py-0.5 rounded-full ${
                               isSelected ? 'bg-white/30 text-white' : 'bg-stone-200 text-stone-700'
@@ -299,11 +299,11 @@ export const OnboardingJourney: React.FC<OnboardingJourneyProps> = ({
                           </span>
                         </div>
                         <p
-                          className={`text-xs font-semibold mt-1 leading-snug ${
+                          className={`text-xs font-semibold mt-0.5 leading-snug line-clamp-1 ${
                             isSelected ? 'text-white/95' : 'text-stone-600'
                           }`}
                         >
-                          {info.onboardingDesc}
+                          {info.worldEmoji} {info.worldName}: {info.onboardingDesc}
                         </p>
                       </div>
 
@@ -312,55 +312,14 @@ export const OnboardingJourney: React.FC<OnboardingJourneyProps> = ({
                         <motion.div
                           initial={{ scale: 0 }}
                           animate={{ scale: 1 }}
-                          className="absolute top-3.5 right-3.5 bg-white text-amber-600 w-7 h-7 rounded-full flex items-center justify-center font-black shadow-md"
+                          className="absolute top-3.5 right-3.5 bg-white text-amber-600 w-6 h-6 rounded-full flex items-center justify-center font-black shadow-md"
                         >
-                          <CheckCircle2 className="w-5 h-5 text-emerald-600 fill-emerald-100" />
+                          <CheckCircle2 className="w-4 h-4 text-emerald-600 fill-emerald-100" />
                         </motion.div>
                       )}
                     </motion.button>
                   );
                 })}
-              </div>
-
-              {/* Class 2, 3, 4, 5 Expansion Toggle */}
-              <div className="text-center pt-1">
-                <button
-                  type="button"
-                  onClick={() => setShowAdvancedGrades(!showAdvancedGrades)}
-                  className="text-xs font-black text-amber-700 hover:text-amber-800 underline underline-offset-4 cursor-pointer"
-                >
-                  {showAdvancedGrades ? '▲ Hide other grades' : '▼ Looking for Class 2, 3, 4, or 5?'}
-                </button>
-
-                {showAdvancedGrades && (
-                  <motion.div
-                    initial={{ opacity: 0, height: 0 }}
-                    animate={{ opacity: 1, height: 'auto' }}
-                    className="grid grid-cols-2 sm:grid-cols-4 gap-2 mt-3"
-                  >
-                    {(['class2', 'class3', 'class4', 'class5'] as GradeLevel[]).map((gKey) => {
-                      const gInfo = GRADE_INFO[gKey];
-                      const isSel = selectedGrade === gKey;
-                      return (
-                        <button
-                          key={gKey}
-                          onClick={() => handleSelectGrade(gKey)}
-                          className={`p-2.5 rounded-2xl text-left border-2 transition-all flex flex-col items-center text-center cursor-pointer ${
-                            isSel
-                              ? `bg-gradient-to-r ${gInfo.themeGradient} text-white border-white ring-2 ring-amber-400`
-                              : 'bg-stone-50 hover:bg-stone-100 text-stone-800 border-stone-200'
-                          }`}
-                        >
-                          <span className="text-2xl mb-1">{gInfo.icon}</span>
-                          <span className="font-black text-xs">{gInfo.name}</span>
-                          <span className={`text-[10px] ${isSel ? 'text-white/80' : 'text-stone-500'}`}>
-                            {gInfo.ageRange}
-                          </span>
-                        </button>
-                      );
-                    })}
-                  </motion.div>
-                )}
               </div>
 
               {/* Bottom Action Bar */}

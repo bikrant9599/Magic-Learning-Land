@@ -9,6 +9,53 @@ export interface UserProfile {
   lastVisitDate: string;
 }
 
+export interface GameScoreRecord {
+  bestScore: number;
+  stars: number;
+  coins: number;
+  plays: number;
+  accuracy: number;
+  lastPlayedDate: string;
+}
+
+export interface SafePlayerProfile {
+  version: number;
+  player: {
+    id: string;
+    name: string;
+    grade: GradeLevel;
+    avatarEmoji: string;
+    isOnboarded: boolean;
+    streakDays: number;
+    lastVisitDate: string;
+    selectedCompanion: string;
+    unlockedCharacters: string[];
+    unlockedBadges: string[];
+    trophies: string[];
+  };
+  progress: {
+    completedGameIds: string[];
+    gameScores: Record<string, GameScoreRecord>;
+    currentGrade: GradeLevel;
+    currentWorld: string;
+    lastPlayedGameId: string | null;
+    lastPlayedTimestamp?: number;
+  };
+  rewards: {
+    stars: number;
+    coins: number;
+    badges: string[];
+    trophies: string[];
+  };
+  performance: ParentProgressData;
+  settings: {
+    sound: boolean;
+    music: boolean;
+    voice: boolean;
+  };
+  dailyMission: DailyMissionState;
+}
+
 export type GameCategory = 'all' | 'english' | 'maths' | 'logic' | 'science' | 'creative';
 
 export type DifficultyLevel = 'easy' | 'medium' | 'challenge';

@@ -30,473 +30,290 @@ import {
   DailyMissionState,
   ParentProgressData,
   UserProfile,
+  SafePlayerProfile,
 } from './types';
 import { ALL_GAMES, GRADE_INFO } from './data/allGamesData';
 import { soundEngine } from './utils/audio';
+import {
+  loadPlayerProfile,
+  savePlayerProfile,
+  recordLastPlayedGame,
+  recordGameFinish,
+  updatePlayerProfileInfo,
+  updatePlayerAudioSettings,
+  resetPlayerProfileExplicitly,
+} from './utils/playerStorage';
 import { OnboardingJourney } from './components/OnboardingJourney';
 import { UniversalGamePlayer } from './components/UniversalGamePlayer';
 import { DailyMissionModal } from './components/DailyMissionModal';
 import { ParentTeacherDashboard } from './components/ParentTeacherDashboard';
 import { RewardsBadgesModal, CHARACTER_COMPANIONS } from './components/RewardsBadgesModal';
+import { ContinueAdventureBanner } from './components/ContinueAdventureBanner';
 import { motion, AnimatePresence } from 'motion/react';
 
-const LOCAL_STORAGE_KEY = 'magic_learning_land_v2_data';
-
 export const App: React.FC = () => {
-  // User Profile & Onboarding State
-  const [userProfile, setUserProfile] = useState<UserProfile | null>(() => {
-    const saved = localStorage.getItem(LOCAL_STORAGE_KEY + '_profile');
-    if (saved) {
-      try {
-        const parsed = JSON.parse(saved);
-        if (parsed && parsed.name && parsed.isOnboarded) {
-          return parsed;
-        }
-      } catch (e) {}
-    }
-    return null;
+  // Load persistent profile on mount using safe migration engine
+  const [profileState, setProfileState] = useState<SafePlayerProfile>(() => {
+    const loaded = loadPlayerProfile();
+    // Initialize sound engine state
+    soundEngine.setMuted(!loaded.settings.sound);
+    soundEngine.setMusicEnabled(loaded.settings.music);
+    return loaded;
   });
 
+  // Onboarding state: If already onboarded, NEVER ask for class or name again
   const [isOnboardingOpen, setIsOnboardingOpen] = useState<boolean>(() => {
-    const saved = localStorage.getItem(LOCAL_STORAGE_KEY + '_profile');
-    if (saved) {
-      try {
-        const parsed = JSON.parse(saved);
-        if (parsed && parsed.name && parsed.isOnboarded) {
-          return false;
-        }
-      } catch (e) {}
-    }
-    return true;
+    const loaded = loadPlayerProfile();
+    return !(loaded.player.isOnboarded && loaded.player.name && loaded.player.name.trim().length > 0);
   });
 
-  // Navigation & Active Game State
+  // Active Grade Level & Category
   const [currentGrade, setCurrentGrade] = useState<GradeLevel>(() => {
-    if (userProfile?.grade) return userProfile.grade;
-    return 'nursery';
+    return profileState.player.grade || profileState.progress.currentGrade || 'nursery';
   });
 
   const [activeCategory, setActiveCategory] = useState<GameCategory>('all');
   const [searchQuery, setSearchQuery] = useState('');
   const [activeGame, setActiveGame] = useState<GameMetadata | null>(null);
 
-  // User Stats & Persistence
-  const [userStars, setUserStars] = useState<number>(() => {
-    const saved = localStorage.getItem(LOCAL_STORAGE_KEY + '_stars');
-    return saved ? parseInt(saved, 10) : 15;
-  });
+  // Audio / Music UI states
+  const [isMuted, setIsMuted] = useState(!profileState.settings.sound);
+  const [isMusicOn, setIsMusicOn] = useState(profileState.settings.music);
 
-  const [userCoins, setUserCoins] = useState<number>(() => {
-    const saved = localStorage.getItem(LOCAL_STORAGE_KEY + '_coins');
-    return saved ? parseInt(saved, 10) : 75;
-  });
-
-  const [completedGameIds, setCompletedGameIds] = useState<string[]>(() => {
-    const saved = localStorage.getItem(LOCAL_STORAGE_KEY + '_completed');
-    return saved ? JSON.parse(saved) : ['nursery_color_hunt', 'nursery_animal_sound'];
-  });
-
-  const [selectedCompanion, setSelectedCompanion] = useState<string>('bunny');
-  const [isMuted, setIsMuted] = useState(soundEngine.isMutedState());
-  const [isMusicOn, setIsMusicOn] = useState(soundEngine.isMusicEnabled());
-
-  // Modals Visibility
+  // Modal Visibilities
   const [isDailyMissionOpen, setIsDailyMissionOpen] = useState(false);
   const [isParentDashboardOpen, setIsParentDashboardOpen] = useState(false);
   const [isRewardsModalOpen, setIsRewardsModalOpen] = useState(false);
   const [isEditProfileOpen, setIsEditProfileOpen] = useState(false);
+  const [showExplicitResetConfirm, setShowExplicitResetConfirm] = useState(false);
 
-  // Parent Progress Analytics State
-  const [parentStats, setParentStats] = useState<ParentProgressData>(() => {
-    const saved = localStorage.getItem(LOCAL_STORAGE_KEY + '_parent');
-    if (saved) {
-      try {
-        return JSON.parse(saved);
-      } catch (e) {}
-    }
-    return {
-      timeSpentSeconds: 480,
-      totalAttempts: 22,
-      correctAttempts: 20,
-      starsEarned: 15,
-      coinsEarned: 75,
-      gamesCompletedCount: 2,
-      completedGameIds: ['nursery_color_hunt', 'nursery_animal_sound'],
-      gradeProgress: {
-        nursery: { played: 2, mastered: 2 },
-        lkg: { played: 0, mastered: 0 },
-        ukg: { played: 0, mastered: 0 },
-        class1: { played: 0, mastered: 0 },
-      },
-      subjectStats: {
-        english: { attempts: 5, correct: 5, gamesPlayed: 1 },
-        maths: { attempts: 6, correct: 5, gamesPlayed: 1 },
-        logic: { attempts: 4, correct: 4, gamesPlayed: 0 },
-        science: { attempts: 5, correct: 5, gamesPlayed: 1 },
-        creative: { attempts: 2, correct: 1, gamesPlayed: 1 },
-      },
-      strengths: ['Auditory Animal Recognition', 'Color Discriminations', 'Shape Matching'],
-      needsPractice: ['CVC Word Blending'],
-      lastSessionDate: new Date().toISOString(),
-    };
-  });
+  // Sync Audio engine with state
+  const handleToggleMute = () => {
+    const nextMuted = !isMuted;
+    setIsMuted(nextMuted);
+    soundEngine.setMuted(nextMuted);
+    const updated = updatePlayerAudioSettings({ sound: !nextMuted });
+    setProfileState(updated);
+  };
 
-  // Daily Mission State (Curated 5 activities from current grade)
-  const [dailyMission, setDailyMission] = useState<DailyMissionState>(() => {
-    const today = new Date().toDateString();
-    const saved = localStorage.getItem(LOCAL_STORAGE_KEY + '_mission');
-    if (saved) {
-      try {
-        const parsed = JSON.parse(saved);
-        if (parsed.date === today) return parsed;
-      } catch (e) {}
-    }
+  const handleToggleMusic = () => {
+    const nextMusic = !isMusicOn;
+    setIsMusicOn(nextMusic);
+    soundEngine.setMusicEnabled(nextMusic);
+    const updated = updatePlayerAudioSettings({ music: nextMusic });
+    setProfileState(updated);
+  };
 
-    const gradeGames = ALL_GAMES.filter((g) => g.grade === currentGrade);
-    const curatedGames = gradeGames.slice(0, 5);
+  // Find remembered last played game
+  const lastPlayedGame = useMemo<GameMetadata | null>(() => {
+    if (!profileState.progress.lastPlayedGameId) return null;
+    return ALL_GAMES.find((g) => g.id === profileState.progress.lastPlayedGameId) || null;
+  }, [profileState.progress.lastPlayedGameId]);
 
-    return {
-      date: today,
-      items: curatedGames.map((g) => ({
-        gameId: g.id,
-        title: g.title,
-        icon: g.icon,
-        category: g.category,
-        grade: g.grade,
-        completed: false,
-      })),
-      completedCount: 0,
-      bonusClaimed: false,
-    };
-  });
+  // Current Grade Details
+  const currentGradeDetails = GRADE_INFO[currentGrade] || GRADE_INFO.nursery;
 
-  // Update curated daily mission whenever grade changes
-  useEffect(() => {
-    const today = new Date().toDateString();
-    const gradeGames = ALL_GAMES.filter((g) => g.grade === currentGrade);
-    const curated = (gradeGames.length >= 5 ? gradeGames.slice(0, 5) : ALL_GAMES.slice(0, 5));
+  // Active companion
+  const activeCompanion = useMemo(() => {
+    return (
+      CHARACTER_COMPANIONS.find((c) => c.id === profileState.player.selectedCompanion) ||
+      CHARACTER_COMPANIONS[0]
+    );
+  }, [profileState.player.selectedCompanion]);
 
-    setDailyMission((prev) => {
-      // Keep existing completion status if same game
-      const updatedItems = curated.map((g) => ({
-        gameId: g.id,
-        title: g.title,
-        icon: g.icon,
-        category: g.category,
-        grade: g.grade,
-        completed: completedGameIds.includes(g.id),
-      }));
-      const completedCount = updatedItems.filter((it) => it.completed).length;
-      return {
-        date: today,
-        items: updatedItems,
-        completedCount,
-        bonusClaimed: prev.bonusClaimed,
-      };
+  // Filtered games for current grade
+  const gradeGames = useMemo(() => {
+    return ALL_GAMES.filter((g) => g.grade === currentGrade);
+  }, [currentGrade]);
+
+  const filteredGames = useMemo(() => {
+    return gradeGames.filter((g) => {
+      const matchesCat = activeCategory === 'all' || g.category === activeCategory;
+      const matchesSearch =
+        searchQuery.trim() === '' ||
+        g.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        g.skill.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        g.objective.toLowerCase().includes(searchQuery.toLowerCase());
+      return matchesCat && matchesSearch;
     });
-  }, [currentGrade, completedGameIds]);
+  }, [gradeGames, activeCategory, searchQuery]);
 
-  // Save changes to localStorage
-  useEffect(() => {
-    if (userProfile) {
-      localStorage.setItem(LOCAL_STORAGE_KEY + '_profile', JSON.stringify(userProfile));
-    }
-    localStorage.setItem(LOCAL_STORAGE_KEY + '_stars', userStars.toString());
-    localStorage.setItem(LOCAL_STORAGE_KEY + '_coins', userCoins.toString());
-    localStorage.setItem(LOCAL_STORAGE_KEY + '_completed', JSON.stringify(completedGameIds));
-    localStorage.setItem(LOCAL_STORAGE_KEY + '_mission', JSON.stringify(dailyMission));
-    localStorage.setItem(LOCAL_STORAGE_KEY + '_parent', JSON.stringify(parentStats));
-  }, [userProfile, userStars, userCoins, completedGameIds, dailyMission, parentStats]);
+  // 5 Curated activities for Today's Adventure
+  const todaysAdventureGames = useMemo(() => {
+    return gradeGames.slice(0, 5);
+  }, [gradeGames]);
+
+  const completedTodayCount = useMemo(() => {
+    return todaysAdventureGames.filter((g) => profileState.progress.completedGameIds.includes(g.id)).length;
+  }, [todaysAdventureGames, profileState.progress.completedGameIds]);
+
+  // Handle Game Selection / Launch
+  const handleLaunchGame = (game: GameMetadata) => {
+    soundEngine.playCelebration();
+    // Record as last played game in storage
+    const updated = recordLastPlayedGame(game.id, game.grade);
+    setProfileState(updated);
+    setActiveGame(game);
+  };
 
   // Handle Onboarding Completion
   const handleCompleteOnboarding = (newProfile: UserProfile) => {
-    setUserProfile(newProfile);
+    const updated = updatePlayerProfileInfo(newProfile.name, newProfile.grade, newProfile.avatarEmoji);
+    setProfileState(updated);
     setCurrentGrade(newProfile.grade);
     setIsOnboardingOpen(false);
-    localStorage.setItem(LOCAL_STORAGE_KEY + '_profile', JSON.stringify(newProfile));
     soundEngine.speak(`Welcome to ${GRADE_INFO[newProfile.grade].worldName}, ${newProfile.name}!`);
   };
 
-  // Handle game finish
+  // Handle Game Finished
   const handleGameFinish = (gameId: string, starsEarned: number, coinsEarned: number, accuracy: number) => {
-    setUserStars((s) => s + starsEarned);
-    setUserCoins((c) => c + coinsEarned);
-
-    if (!completedGameIds.includes(gameId)) {
-      setCompletedGameIds((prev) => [...prev, gameId]);
-    }
-
-    // Update Daily Mission if applicable
-    setDailyMission((prev) => {
-      let updated = false;
-      const newItems = prev.items.map((it) => {
-        if (it.gameId === gameId && !it.completed) {
-          updated = true;
-          return { ...it, completed: true };
-        }
-        return it;
-      });
-
-      const completedCount = newItems.filter((it) => it.completed).length;
-      return { ...prev, items: newItems, completedCount };
-    });
-
-    // Update Parent Progress Analytics
-    setParentStats((prev) => {
-      const currentGame = ALL_GAMES.find((g) => g.id === gameId);
-      const catKey = (currentGame?.category || 'english') as 'english' | 'maths' | 'logic' | 'science' | 'creative';
-
-      const prevCat = prev.subjectStats?.[catKey] || {
-        attempts: 0,
-        correct: 0,
-        gamesPlayed: 0,
-      };
-
-      const updatedSubjectStats = {
-        ...(prev.subjectStats || {
-          english: { attempts: 0, correct: 0, gamesPlayed: 0 },
-          maths: { attempts: 0, correct: 0, gamesPlayed: 0 },
-          logic: { attempts: 0, correct: 0, gamesPlayed: 0 },
-          science: { attempts: 0, correct: 0, gamesPlayed: 0 },
-          creative: { attempts: 0, correct: 0, gamesPlayed: 0 },
-        }),
-        [catKey]: {
-          attempts: prevCat.attempts + 5,
-          correct: prevCat.correct + Math.round((5 * accuracy) / 100),
-          gamesPlayed: prevCat.gamesPlayed + 1,
-        },
-      };
-
-      return {
-        ...prev,
-        timeSpentSeconds: prev.timeSpentSeconds + 120,
-        totalAttempts: prev.totalAttempts + 5,
-        correctAttempts: prev.correctAttempts + Math.round((5 * accuracy) / 100),
-        starsEarned: prev.starsEarned + starsEarned,
-        coinsEarned: prev.coinsEarned + coinsEarned,
-        gamesCompletedCount: prev.gamesCompletedCount + 1,
-        completedGameIds: Array.from(new Set([...prev.completedGameIds, gameId])),
-        subjectStats: updatedSubjectStats,
-        lastSessionDate: new Date().toISOString(),
-      };
-    });
-  };
-
-  // Claim Daily Mission Bonus
-  const handleClaimDailyBonus = () => {
-    setUserStars((s) => s + 50);
-    setUserCoins((c) => c + 100);
-    setDailyMission((prev) => ({ ...prev, bonusClaimed: true }));
-  };
-
-  // Reset Progress
-  const handleResetProgress = () => {
-    setUserStars(0);
-    setUserCoins(0);
-    setCompletedGameIds([]);
-    localStorage.clear();
-    setUserProfile(null);
-    setIsOnboardingOpen(true);
-  };
-
-  // Filter games based on Grade, Category, Search
-  const filteredGames = useMemo(() => {
-    return ALL_GAMES.filter((game) => {
-      const matchesGrade = game.grade === currentGrade;
-      const matchesCategory = activeCategory === 'all' || game.category === activeCategory;
-      const matchesSearch =
-        searchQuery.trim() === '' ||
-        game.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        game.skill.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        game.objective.toLowerCase().includes(searchQuery.toLowerCase());
-      return matchesGrade && matchesCategory && matchesSearch;
-    });
-  }, [currentGrade, activeCategory, searchQuery]);
-
-  // 5 Curated Games for "Today's Adventure"
-  const todaysAdventureGames = useMemo(() => {
-    const matchingGradeGames = ALL_GAMES.filter((g) => g.grade === currentGrade);
-    return matchingGradeGames.slice(0, 5);
-  }, [currentGrade]);
-
-  const completedTodayCount = todaysAdventureGames.filter((g) =>
-    completedGameIds.includes(g.id)
-  ).length;
-
-  // Current Companion details
-  const activeCompanion =
-    CHARACTER_COMPANIONS.find((c) => c.id === selectedCompanion) || CHARACTER_COMPANIONS[0];
-
-  const currentGradeDetails = GRADE_INFO[currentGrade] || GRADE_INFO.nursery;
-
-  // If onboarding is active and user is not onboarded, show the Onboarding Journey
-  if (isOnboardingOpen || !userProfile?.isOnboarded) {
-    return (
-      <OnboardingJourney
-        onComplete={handleCompleteOnboarding}
-        initialProfile={userProfile || undefined}
-      />
+    const currentGame = ALL_GAMES.find((g) => g.id === gameId);
+    const category = currentGame?.category || 'english';
+    const updated = recordGameFinish(
+      gameId,
+      currentGrade,
+      starsEarned,
+      coinsEarned,
+      accuracy,
+      category
     );
-  }
+    setProfileState(updated);
+  };
 
-  // If a game is active, render the UniversalGamePlayer
+  // Handle Daily Mission Bonus
+  const handleClaimDailyBonus = () => {
+    soundEngine.playVictoryFanfare();
+    const updated = { ...profileState };
+    updated.rewards.stars += 10;
+    updated.rewards.coins += 50;
+    if (updated.dailyMission) {
+      updated.dailyMission.bonusClaimed = true;
+    }
+    savePlayerProfile(updated);
+    setProfileState({ ...updated });
+  };
+
+  // Handle Companion Selection
+  const handleSelectCompanion = (charId: string) => {
+    const updated = { ...profileState };
+    updated.player.selectedCompanion = charId;
+    savePlayerProfile(updated);
+    setProfileState({ ...updated });
+  };
+
+  // Handle Explicit Progress Reset (Protected by 2-step confirmation)
+  const handleConfirmResetProgress = () => {
+    const fresh = resetPlayerProfileExplicitly();
+    setProfileState(fresh);
+    setCurrentGrade(fresh.player.grade);
+    setIsOnboardingOpen(true);
+    setShowExplicitResetConfirm(false);
+    setIsParentDashboardOpen(false);
+    setIsEditProfileOpen(false);
+    soundEngine.playSuccess();
+  };
+
+  // Handle Continue Adventure button click
+  const handleContinueAdventure = () => {
+    // Find first uncompleted game in today's adventure, or first game of current grade
+    const nextGame = todaysAdventureGames.find(
+      (g) => !profileState.progress.completedGameIds.includes(g.id)
+    ) || todaysAdventureGames[0] || gradeGames[0];
+
+    if (nextGame) {
+      handleLaunchGame(nextGame);
+    }
+  };
+
+  // If currently in a game, show Universal Game Player
   if (activeGame) {
-    const nextGameIndex = ALL_GAMES.findIndex((g) => g.id === activeGame.id) + 1;
-    const nextGame = nextGameIndex < ALL_GAMES.length ? ALL_GAMES[nextGameIndex] : undefined;
-
     return (
       <UniversalGamePlayer
         game={activeGame}
-        userStars={userStars}
-        userCoins={userCoins}
+        userStars={profileState.rewards.stars}
+        userCoins={profileState.rewards.coins}
         onBack={() => {
           soundEngine.playGentlePop();
           setActiveGame(null);
         }}
         onGameFinish={handleGameFinish}
-        onNextGame={
-          nextGame
-            ? () => {
-                soundEngine.playCelebration();
-                setActiveGame(nextGame);
-              }
-            : undefined
-        }
+        onNextGame={() => {
+          const currentIndex = gradeGames.findIndex((g) => g.id === activeGame.id);
+          const nextGame = gradeGames[(currentIndex + 1) % gradeGames.length];
+          handleLaunchGame(nextGame);
+        }}
+      />
+    );
+  }
+
+  // If user is brand new or needs onboarding
+  if (isOnboardingOpen) {
+    return (
+      <OnboardingJourney
+        onComplete={handleCompleteOnboarding}
+        initialProfile={{
+          name: profileState.player.name,
+          grade: profileState.player.grade,
+          avatarEmoji: profileState.player.avatarEmoji,
+        }}
       />
     );
   }
 
   return (
-    <div className={`min-h-screen bg-stone-50 text-stone-900 flex flex-col selection:bg-amber-300 relative overflow-x-hidden`}>
-      {/* Gentle Floating Animated Background */}
-      <div className="fixed inset-0 pointer-events-none overflow-hidden z-0" aria-hidden="true">
-        <motion.div
-          animate={{ x: [0, 40, 0], y: [0, -15, 0] }}
-          transition={{ duration: 16, repeat: Infinity, ease: 'easeInOut' }}
-          className="absolute top-12 left-10 text-4xl opacity-20"
-        >
-          ☁️
-        </motion.div>
-        <motion.div
-          animate={{ x: [0, -50, 0], y: [0, 20, 0] }}
-          transition={{ duration: 20, repeat: Infinity, ease: 'easeInOut', delay: 2 }}
-          className="absolute top-48 right-12 text-5xl opacity-15"
-        >
-          ☁️
-        </motion.div>
-        <motion.div
-          animate={{ y: [0, -20, 0], rotate: [-4, 4, -4] }}
-          transition={{ duration: 8, repeat: Infinity, ease: 'easeInOut' }}
-          className="absolute bottom-24 left-8 text-3xl opacity-25"
-        >
-          🎈
-        </motion.div>
-        <motion.div
-          animate={{ y: [0, -25, 0], rotate: [4, -4, 4] }}
-          transition={{ duration: 9, repeat: Infinity, ease: 'easeInOut', delay: 1 }}
-          className="absolute top-1/2 right-6 text-3xl opacity-25"
-        >
-          🦋
-        </motion.div>
-      </div>
-
+    <div className="min-h-screen bg-stone-100 text-stone-900 flex flex-col font-sans select-none antialiased">
       {/* ============================================================ */}
-      {/* TOP MAIN PERSONALIZED HEADER */}
+      {/* TOP HEADER & CONTROLS BAR */}
       {/* ============================================================ */}
-      <header className="sticky top-0 z-40 bg-white/95 backdrop-blur-md border-b-2 border-stone-200 shadow-sm px-3 sm:px-6 py-2.5">
-        <div className="max-w-7xl mx-auto flex items-center justify-between gap-2 sm:gap-4 flex-wrap">
-          {/* Left: Personalized Greeting & Child Avatar Badge */}
-          <div className="flex items-center gap-3">
-            {/* Child Profile Button */}
-            <motion.button
-              id="btn_child_profile"
-              whileHover={{ scale: 1.05 }}
-              whileTap={{ scale: 0.95 }}
-              onClick={() => {
-                soundEngine.playGentlePop();
-                setIsEditProfileOpen(true);
-              }}
-              className="flex items-center gap-2.5 bg-gradient-to-r from-amber-100 via-orange-100 to-amber-200 border-2 border-amber-300 hover:border-amber-400 p-1.5 sm:px-3 sm:py-1.5 rounded-2xl shadow-xs cursor-pointer transition-all text-left"
-              title="Click to edit child name or change class"
-            >
-              <span className="w-9 h-9 sm:w-10 sm:h-10 rounded-xl bg-white flex items-center justify-center text-2xl shadow-sm border border-amber-200">
-                {userProfile?.avatarEmoji || '🐰'}
+      <header className="sticky top-0 z-40 bg-white/95 backdrop-blur-md border-b-2 border-stone-200 shadow-xs px-3 sm:px-6 py-2.5">
+        <div className="max-w-7xl mx-auto flex items-center justify-between gap-2 sm:gap-4">
+          {/* App Brand */}
+          <div className="flex items-center gap-2 text-stone-800">
+            <span className="text-2xl">✨</span>
+            <div className="flex flex-col">
+              <span className="font-black text-base sm:text-lg tracking-tight bg-gradient-to-r from-amber-600 to-orange-600 bg-clip-text text-transparent leading-tight">
+                Magic Learning Land
               </span>
-              <div className="min-w-0">
-                <div className="flex items-center gap-1.5">
-                  <span className="font-black text-xs sm:text-sm text-stone-900 truncate">
-                    Hi, {userProfile?.name || 'Explorer'}! 👋
-                  </span>
-                  <span className="text-[10px] bg-amber-500 text-white font-extrabold px-1.5 py-0.2 rounded-md hidden sm:inline">
-                    {currentGradeDetails.icon} {currentGradeDetails.name}
-                  </span>
-                </div>
-                <p className="text-[10px] sm:text-xs text-stone-600 font-semibold truncate hidden xs:block">
-                  Ready for today's adventure?
-                </p>
-              </div>
-            </motion.button>
+              <span className="text-[10px] font-bold text-stone-500 hidden sm:block">
+                Curriculum Adventure • Nursery to Class 5
+              </span>
+            </div>
           </div>
 
-          {/* Right: Stats (Stars, Coins, Badges, Sound/Music, Parent Portal) */}
-          <div className="flex items-center gap-1.5 sm:gap-3">
-            {/* Daily Mission Pill */}
-            <motion.button
+          {/* Right Side: Daily Quest, Audio Controls & Parent Portal */}
+          <div className="flex items-center gap-1.5 sm:gap-2">
+            {/* Daily Mission Button */}
+            <button
               id="btn_daily_mission"
-              whileHover={{ scale: 1.05 }}
-              whileTap={{ scale: 0.95 }}
               onClick={() => {
                 soundEngine.playGentlePop();
                 setIsDailyMissionOpen(true);
               }}
-              className="flex items-center gap-1.5 bg-gradient-to-r from-amber-500 to-orange-500 text-white px-2.5 sm:px-3.5 py-1.5 sm:py-2 rounded-2xl font-black text-xs sm:text-sm shadow-sm cursor-pointer hover:shadow-md transition-all"
+              className="relative flex items-center gap-1 bg-rose-50 hover:bg-rose-100 text-rose-800 border border-rose-300 px-2.5 sm:px-3 py-1 sm:py-1.5 rounded-2xl font-black text-xs sm:text-sm transition-colors cursor-pointer"
             >
-              <Flame className="w-4 h-4 fill-current text-yellow-300 animate-pulse" />
-              <span className="hidden sm:inline">Daily Mission</span>
-              <span className="bg-white/30 text-white px-1.5 py-0.2 rounded-full text-xs">
-                {dailyMission.completedCount}/5
+              <Flame className="w-4 h-4 text-rose-500 fill-rose-500" />
+              <span className="hidden sm:inline">Daily Quest</span>
+              <span className="bg-rose-600 text-white text-[10px] px-1.5 py-0.2 rounded-full font-black">
+                {completedTodayCount}/5
               </span>
-            </motion.button>
-
-            {/* Stars & Coins Counter */}
-            <button
-              id="btn_rewards"
-              onClick={() => {
-                soundEngine.playGentlePop();
-                setIsRewardsModalOpen(true);
-              }}
-              className="flex items-center gap-1.5 bg-amber-50 hover:bg-amber-100 text-amber-900 border border-amber-300 px-2.5 sm:px-3 py-1.5 sm:py-2 rounded-2xl font-black text-xs sm:text-sm transition-colors cursor-pointer"
-            >
-              <Star className="w-4 h-4 text-amber-500 fill-amber-400" />
-              <span>{userStars}</span>
-              <span className="text-stone-300 hidden sm:inline">|</span>
-              <span className="text-amber-800 hidden sm:inline">🪙 {userCoins}</span>
             </button>
 
-            {/* Sound Toggle */}
+            {/* Mute Audio Toggle */}
             <button
-              onClick={() => {
-                const next = !isMuted;
-                setIsMuted(next);
-                soundEngine.setMuted(next);
-              }}
-              className="p-2 rounded-2xl bg-stone-100 hover:bg-stone-200 text-stone-700 border border-stone-300 transition-colors cursor-pointer"
-              title={isMuted ? 'Turn Sound ON' : 'Turn Sound OFF'}
+              onClick={handleToggleMute}
+              className={`p-2 rounded-2xl border transition-colors cursor-pointer ${
+                isMuted
+                  ? 'bg-rose-100 border-rose-300 text-rose-700'
+                  : 'bg-stone-100 border-stone-300 text-stone-700'
+              }`}
+              title={isMuted ? 'Unmute Sounds' : 'Mute Sounds'}
             >
-              {isMuted ? (
-                <VolumeX className="w-4 h-4 text-rose-500" />
-              ) : (
-                <Volume2 className="w-4 h-4 text-emerald-600" />
-              )}
+              {isMuted ? <VolumeX className="w-4 h-4" /> : <Volume2 className="w-4 h-4" />}
             </button>
 
-            {/* Music Toggle */}
+            {/* Background Music Toggle */}
             <button
-              onClick={() => {
-                const next = !isMusicOn;
-                setIsMusicOn(next);
-                soundEngine.setMusicEnabled(next);
-              }}
+              onClick={handleToggleMusic}
               className={`p-2 rounded-2xl border transition-colors cursor-pointer ${
                 isMusicOn
                   ? 'bg-purple-100 border-purple-300 text-purple-700'
@@ -514,7 +331,7 @@ export const App: React.FC = () => {
                 soundEngine.playGentlePop();
                 setIsParentDashboardOpen(true);
               }}
-              className="flex items-center gap-1 bg-indigo-50 hover:bg-indigo-100 text-indigo-900 border border-indigo-300 px-2.5 sm:px-3 py-1.5 sm:py-2 rounded-2xl font-black text-xs sm:text-sm transition-colors cursor-pointer"
+              className="flex items-center gap-1 bg-indigo-50 hover:bg-indigo-100 text-indigo-900 border border-indigo-300 px-2.5 sm:px-3 py-1 sm:py-1.5 rounded-2xl font-black text-xs sm:text-sm transition-colors cursor-pointer"
               title="Parent & Teacher Learning Analytics"
             >
               <ShieldCheck className="w-4 h-4 text-indigo-600" />
@@ -528,45 +345,40 @@ export const App: React.FC = () => {
       {/* MAIN CONTAINER */}
       {/* ============================================================ */}
       <main className="max-w-7xl mx-auto w-full px-3 sm:px-6 py-6 flex-1 flex flex-col gap-6 relative z-10">
-        {/* Welcome Back Banner for Returning Child */}
-        <div className="flex items-center justify-between bg-white px-4 py-2.5 rounded-2xl border border-stone-200 shadow-xs">
-          <div className="flex items-center gap-2">
-            <span className="text-xl">🌟</span>
-            <span className="font-extrabold text-xs sm:text-sm text-stone-800">
-              Welcome to <span className="text-amber-700 font-black">{currentGradeDetails.worldEmoji} {currentGradeDetails.worldName}</span> ({currentGradeDetails.name})!
-            </span>
-          </div>
+        {/* ============================================================ */}
+        {/* 🌟 PERSISTENT HERO: CONTINUE ADVENTURE & WELCOME BACK */}
+        {/* ============================================================ */}
+        <ContinueAdventureBanner
+          childName={profileState.player.name}
+          avatarEmoji={profileState.player.avatarEmoji}
+          grade={currentGrade}
+          stars={profileState.rewards.stars}
+          badgesCount={profileState.rewards.badges.length}
+          completedGamesCount={profileState.progress.completedGameIds.length}
+          streakDays={profileState.player.streakDays}
+          lastPlayedGame={lastPlayedGame}
+          onContinueAdventure={handleContinueAdventure}
+          onContinueLastPlayed={(game) => handleLaunchGame(game)}
+          onChangeClassOrName={() => setIsEditProfileOpen(true)}
+        />
 
-          <div className="flex items-center gap-2">
-            <button
-              onClick={() => setIsEditProfileOpen(true)}
-              className="text-xs font-black text-amber-700 hover:text-amber-900 flex items-center gap-1 cursor-pointer"
-            >
-              <Settings className="w-3.5 h-3.5" />
-              <span>Change Class / Name</span>
-            </button>
-          </div>
-        </div>
-
-        {/* Grade Level Selector Tabs (Nursery, LKG, UKG, Class 1 & other grades) */}
-        <section className="bg-white p-2 sm:p-3 rounded-3xl border-2 border-stone-200 shadow-sm">
-          <div className="flex items-center justify-between mb-2 px-1">
+        {/* ============================================================ */}
+        {/* GRADE SELECTOR TABS (NURSERY TO CLASS 5 - 8 WORLDS) */}
+        {/* ============================================================ */}
+        <section className="bg-white p-2.5 sm:p-4 rounded-3xl border-2 border-stone-200 shadow-sm">
+          <div className="flex items-center justify-between mb-2.5 px-1">
             <span className="text-xs font-black text-stone-500 uppercase tracking-wider">
-              Selected Adventure World:
+              Explore All 8 Learning Worlds (Nursery – Class 5):
             </span>
-            <span className="text-xs font-bold text-amber-700">
+            <span className="text-xs font-bold text-amber-700 hidden sm:inline">
               {currentGradeDetails.tagline}
             </span>
           </div>
 
-          <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
-            {(['nursery', 'lkg', 'ukg', 'class1'] as GradeLevel[]).map((gradeKey) => {
+          <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-4 gap-2">
+            {(['nursery', 'lkg', 'ukg', 'class1', 'class2', 'class3', 'class4', 'class5'] as GradeLevel[]).map((gradeKey) => {
               const info = GRADE_INFO[gradeKey];
               const isSelected = currentGrade === gradeKey;
-              const countInGrade = ALL_GAMES.filter((g) => g.grade === gradeKey).length;
-              const completedInGrade = ALL_GAMES.filter(
-                (g) => g.grade === gradeKey && completedGameIds.includes(g.id)
-              ).length;
 
               return (
                 <motion.button
@@ -578,18 +390,18 @@ export const App: React.FC = () => {
                     soundEngine.playGentlePop();
                     setCurrentGrade(gradeKey);
                   }}
-                  className={`p-3 rounded-2xl flex items-center gap-3 transition-all text-left cursor-pointer ${
+                  className={`p-2.5 sm:p-3 rounded-2xl flex items-center gap-2.5 transition-all text-left cursor-pointer ${
                     isSelected
                       ? `bg-gradient-to-r ${info.themeGradient} text-white shadow-md ring-4 ring-amber-300/50`
                       : 'bg-stone-50 hover:bg-stone-100 text-stone-800 border border-stone-200'
                   }`}
                 >
-                  <span className="text-3xl sm:text-4xl shrink-0 drop-shadow">{info.icon}</span>
+                  <span className="text-2xl sm:text-3xl shrink-0 drop-shadow">{info.icon}</span>
                   <div className="flex-1 min-w-0">
-                    <div className="flex items-center justify-between">
-                      <h3 className="font-black text-sm sm:text-base truncate">{info.name}</h3>
+                    <div className="flex items-center justify-between gap-1">
+                      <h3 className="font-black text-xs sm:text-sm truncate">{info.name}</h3>
                       <span
-                        className={`text-[10px] font-extrabold px-2 py-0.5 rounded-full ${
+                        className={`text-[9px] font-extrabold px-1.5 py-0.2 rounded-md shrink-0 ${
                           isSelected ? 'bg-white/30 text-white' : 'bg-stone-200 text-stone-700'
                         }`}
                       >
@@ -597,7 +409,7 @@ export const App: React.FC = () => {
                       </span>
                     </div>
                     <p
-                      className={`text-xs truncate font-bold ${
+                      className={`text-[10px] sm:text-xs truncate font-bold ${
                         isSelected ? 'text-white/95' : 'text-stone-500'
                       }`}
                     >
@@ -648,48 +460,37 @@ export const App: React.FC = () => {
           {/* 5 Curated Game Cards Row */}
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-3">
             {todaysAdventureGames.map((game, idx) => {
-              const isDone = completedGameIds.includes(game.id);
+              const isDone = profileState.progress.completedGameIds.includes(game.id);
 
               return (
                 <motion.div
                   key={game.id}
                   id={`today_game_${game.id}`}
-                  whileHover={{ y: -6, scale: 1.02 }}
-                  whileTap={{ scale: 0.98 }}
-                  className={`bg-white rounded-2xl p-3.5 border-2 flex flex-col justify-between shadow-sm hover:shadow-md transition-all cursor-pointer ${
+                  whileHover={{ y: -4, scale: 1.02 }}
+                  className={`bg-white rounded-2xl p-3.5 border-2 shadow-xs flex flex-col justify-between transition-all ${
                     isDone ? 'border-emerald-300 bg-emerald-50/40' : 'border-amber-200 hover:border-amber-400'
                   }`}
-                  onClick={() => {
-                    soundEngine.playCelebration();
-                    setActiveGame(game);
-                  }}
                 >
                   <div>
                     <div className="flex items-center justify-between mb-1.5">
                       <span className="text-[10px] font-black text-amber-800 bg-amber-100 px-2 py-0.5 rounded-md">
-                        Step {idx + 1}
+                        Activity #{idx + 1}
                       </span>
-                      {isDone ? (
-                        <span className="flex items-center gap-1 text-[10px] font-black text-emerald-700 bg-emerald-100 px-2 py-0.5 rounded-full">
+                      {isDone && (
+                        <span className="text-[10px] font-black text-emerald-700 bg-emerald-100 px-2 py-0.5 rounded-full flex items-center gap-1">
                           <CheckCircle2 className="w-3 h-3 text-emerald-600" />
                           <span>Done</span>
-                        </span>
-                      ) : (
-                        <span className="text-[10px] font-bold text-stone-500 uppercase">
-                          {game.category}
                         </span>
                       )}
                     </div>
 
                     <div className="flex items-center gap-2.5 my-2">
-                      <span className="text-3xl p-1.5 bg-amber-50 rounded-xl border border-amber-100 shadow-inner">
+                      <span className="text-3xl p-1.5 bg-stone-50 rounded-xl border border-stone-200">
                         {game.icon}
                       </span>
                       <div className="min-w-0">
-                        <h4 className="font-black text-xs sm:text-sm text-stone-900 leading-snug line-clamp-1">
-                          {game.title}
-                        </h4>
-                        <span className="text-[10px] font-bold text-amber-700 block truncate">
+                        <h4 className="font-black text-xs text-stone-900 truncate">{game.title}</h4>
+                        <span className="text-[10px] font-bold text-stone-500 truncate block">
                           {game.skill}
                         </span>
                       </div>
@@ -697,60 +498,20 @@ export const App: React.FC = () => {
                   </div>
 
                   <button
-                    className={`mt-2 w-full py-1.5 px-3 rounded-xl font-black text-xs flex items-center justify-center gap-1 shadow-xs transition-colors cursor-pointer ${
+                    onClick={() => handleLaunchGame(game)}
+                    className={`mt-2 w-full py-1.5 px-3 rounded-xl font-black text-xs flex items-center justify-center gap-1 transition-all cursor-pointer ${
                       isDone
-                        ? 'bg-emerald-600 hover:bg-emerald-700 text-white'
-                        : 'bg-amber-500 hover:bg-amber-600 text-white'
+                        ? 'bg-emerald-600 hover:bg-emerald-700 text-white shadow-xs'
+                        : 'bg-amber-500 hover:bg-amber-600 text-white shadow-xs'
                     }`}
                   >
                     <Play className="w-3 h-3 fill-current" />
-                    <span>{isDone ? 'Play Again' : 'Play'}</span>
+                    <span>{isDone ? 'Play Again' : 'Start Quest'}</span>
                   </button>
                 </motion.div>
               );
             })}
           </div>
-        </section>
-
-        {/* Hero Grade Banner & Companion Speech Bubble */}
-        <section
-          className={`bg-gradient-to-r ${currentGradeDetails.themeGradient} text-white p-5 sm:p-7 rounded-3xl shadow-lg relative overflow-hidden flex flex-col md:flex-row items-center justify-between gap-6 border-4 border-white/80`}
-        >
-          <div className="max-w-xl">
-            <div className="inline-flex items-center gap-2 bg-white/20 backdrop-blur-md px-3.5 py-1 rounded-full text-xs font-black uppercase tracking-wider mb-2">
-              <span>{currentGradeDetails.icon}</span>
-              <span>
-                {currentGradeDetails.worldEmoji} {currentGradeDetails.worldName} • 20 Verified Games
-              </span>
-            </div>
-            <h2 className="text-2xl sm:text-3xl md:text-4xl font-black drop-shadow tracking-tight">
-              {currentGradeDetails.tagline}
-            </h2>
-            <p className="text-white/90 text-xs sm:text-sm mt-2 font-medium">
-              Explore interactive games crafted for {currentGradeDetails.ageRange}. Learn phonics, math,
-              animals, shapes, colors and science!
-            </p>
-          </div>
-
-          {/* Interactive Mascot Companion */}
-          <motion.button
-            whileHover={{ scale: 1.05 }}
-            whileTap={{ scale: 0.95 }}
-            onClick={() => {
-              soundEngine.playCelebration();
-              soundEngine.speak(activeCompanion.greeting);
-            }}
-            className="bg-white/20 backdrop-blur-md p-3.5 sm:p-4 rounded-3xl border-2 border-white/40 flex items-center gap-3 text-left shadow-lg shrink-0 cursor-pointer hover:bg-white/30 transition-all max-w-sm"
-          >
-            <span className="text-4xl sm:text-5xl animate-bounce">{userProfile?.avatarEmoji || activeCompanion.avatar}</span>
-            <div>
-              <div className="flex items-center gap-1">
-                <span className="font-black text-white text-sm">{userProfile?.name || activeCompanion.name}</span>
-                <span className="text-xs text-amber-200 font-bold">({currentGradeDetails.name} Explorer)</span>
-              </div>
-              <p className="text-xs text-white/90 italic mt-0.5">"{activeCompanion.greeting}"</p>
-            </div>
-          </motion.button>
         </section>
 
         {/* Filter Controls & Search */}
@@ -812,7 +573,7 @@ export const App: React.FC = () => {
 
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
             {filteredGames.map((game) => {
-              const isCompleted = completedGameIds.includes(game.id);
+              const isCompleted = profileState.progress.completedGameIds.includes(game.id);
 
               return (
                 <motion.div
@@ -867,10 +628,7 @@ export const App: React.FC = () => {
                       {game.skill}
                     </span>
                     <button
-                      onClick={() => {
-                        soundEngine.playCelebration();
-                        setActiveGame(game);
-                      }}
+                      onClick={() => handleLaunchGame(game)}
                       className="flex items-center gap-1.5 bg-amber-500 hover:bg-amber-600 text-white font-black text-xs px-3.5 py-2 rounded-xl shadow-xs transition-transform hover:scale-105 cursor-pointer"
                     >
                       <Play className="w-3.5 h-3.5 fill-current" />
@@ -890,12 +648,12 @@ export const App: React.FC = () => {
           <div className="flex items-center gap-2">
             <ShieldCheck className="w-5 h-5 text-emerald-600" />
             <span className="font-bold text-stone-700">
-              100% Safe Early Learning • Ad-Free • No Personal Data Collected
+              100% Safe Early Learning • Ad-Free • Private On-Device Persistence
             </span>
           </div>
           <div className="flex items-center gap-4 text-stone-600 font-medium">
-            <span>✨ 80 Accredited Foundation Games</span>
-            <span>⭐ Nursery to Class 1</span>
+            <span>✨ 160 Accredited Curriculum Games</span>
+            <span>⭐ Nursery to Class 5</span>
             <span>🎧 Web Audio Procedural Synthesis</span>
           </div>
         </div>
@@ -907,12 +665,11 @@ export const App: React.FC = () => {
       <DailyMissionModal
         isOpen={isDailyMissionOpen}
         onClose={() => setIsDailyMissionOpen(false)}
-        missionState={dailyMission}
+        missionState={profileState.dailyMission}
         onSelectGame={(gameId) => {
           const game = ALL_GAMES.find((g) => g.id === gameId);
           if (game) {
-            soundEngine.playCelebration();
-            setActiveGame(game);
+            handleLaunchGame(game);
           }
         }}
         onClaimBonus={handleClaimDailyBonus}
@@ -921,17 +678,17 @@ export const App: React.FC = () => {
       <ParentTeacherDashboard
         isOpen={isParentDashboardOpen}
         onClose={() => setIsParentDashboardOpen(false)}
-        stats={parentStats}
-        onResetProgress={handleResetProgress}
+        stats={profileState.performance}
+        onResetProgress={() => setShowExplicitResetConfirm(true)}
       />
 
       <RewardsBadgesModal
         isOpen={isRewardsModalOpen}
         onClose={() => setIsRewardsModalOpen(false)}
-        userStars={userStars}
-        userCoins={userCoins}
-        selectedCompanion={selectedCompanion}
-        onSelectCompanion={(charId) => setSelectedCompanion(charId)}
+        userStars={profileState.rewards.stars}
+        userCoins={profileState.rewards.coins}
+        selectedCompanion={profileState.player.selectedCompanion}
+        onSelectCompanion={handleSelectCompanion}
       />
 
       {/* Edit Profile Modal */}
@@ -963,7 +720,7 @@ export const App: React.FC = () => {
                 </label>
                 <input
                   type="text"
-                  defaultValue={userProfile?.name}
+                  defaultValue={profileState.player.name}
                   id="edit_input_child_name"
                   className="w-full text-lg font-black p-3 rounded-2xl bg-stone-50 border-2 border-stone-300 focus:border-amber-500 focus:outline-none"
                 />
@@ -978,14 +735,14 @@ export const App: React.FC = () => {
                   defaultValue={currentGrade}
                   className="w-full text-base font-black p-3 rounded-2xl bg-stone-50 border-2 border-stone-300 focus:border-amber-500 focus:outline-none"
                 >
-                  <option value="nursery">🐣 Nursery (Ages 3–4)</option>
-                  <option value="lkg">🐥 LKG (Ages 4–5)</option>
-                  <option value="ukg">🦋 UKG (Ages 5–6)</option>
-                  <option value="class1">🚀 Class 1 (Ages 6–7)</option>
-                  <option value="class2">🏰 Class 2 (Ages 7–8)</option>
-                  <option value="class3">🌊 Class 3 (Ages 8–9)</option>
-                  <option value="class4">🌋 Class 4 (Ages 9–10)</option>
-                  <option value="class5">🌌 Class 5 (Ages 10–11)</option>
+                  <option value="nursery">🐣 Nursery (Ages 3–4) • Baby Farm</option>
+                  <option value="lkg">🐥 LKG (Ages 4–5) • Rainbow Village</option>
+                  <option value="ukg">🦋 UKG (Ages 5–6) • Learning Forest</option>
+                  <option value="class1">🚀 Class 1 (Ages 6–7) • Space Academy</option>
+                  <option value="class2">🌟 Class 2 (Ages 7–8) • Dinosaur Valley</option>
+                  <option value="class3">🏆 Class 3 (Ages 8–9) • Discovery Island</option>
+                  <option value="class4">🧠 Class 4 (Ages 9–10) • Science City</option>
+                  <option value="class5">👑 Class 5 (Ages 10–11) • Knowledge Kingdom</option>
                 </select>
               </div>
 
@@ -995,15 +752,8 @@ export const App: React.FC = () => {
                     const nameInput = (document.getElementById('edit_input_child_name') as HTMLInputElement)?.value;
                     const gradeSelect = (document.getElementById('edit_select_grade') as HTMLSelectElement)?.value as GradeLevel;
                     if (nameInput?.trim()) {
-                      const updated: UserProfile = {
-                        name: nameInput.trim(),
-                        grade: gradeSelect,
-                        avatarEmoji: userProfile?.avatarEmoji || '🐰',
-                        isOnboarded: true,
-                        streakDays: userProfile?.streakDays || 1,
-                        lastVisitDate: new Date().toISOString(),
-                      };
-                      setUserProfile(updated);
+                      const updated = updatePlayerProfileInfo(nameInput.trim(), gradeSelect);
+                      setProfileState(updated);
                       setCurrentGrade(gradeSelect);
                       setIsEditProfileOpen(false);
                       soundEngine.playSuccess();
@@ -1024,9 +774,50 @@ export const App: React.FC = () => {
                   <RotateCcw className="w-3.5 h-3.5" />
                   <span>Restart Onboarding Tour</span>
                 </button>
+
+                <button
+                  onClick={() => {
+                    setIsEditProfileOpen(false);
+                    setShowExplicitResetConfirm(true);
+                  }}
+                  className="w-full py-2 rounded-xl text-rose-600 hover:bg-rose-50 font-bold text-xs cursor-pointer"
+                >
+                  Reset Records / Fresh Start...
+                </button>
               </div>
             </div>
           </motion.div>
+        </div>
+      )}
+
+      {/* Explicit Reset Confirmation Dialog (Never accidental) */}
+      {showExplicitResetConfirm && (
+        <div className="fixed inset-0 z-60 bg-stone-900/70 backdrop-blur-sm flex items-center justify-center p-4">
+          <div className="bg-white rounded-3xl p-6 sm:p-8 max-w-sm w-full shadow-2xl border-4 border-rose-400 text-center space-y-4">
+            <span className="text-4xl">⚠️</span>
+            <h4 className="text-lg font-black text-stone-900">
+              Are you sure you want to reset this player's progress?
+            </h4>
+            <p className="text-xs text-stone-600 font-medium">
+              This will reset stars, coins, and completed games back to the beginning. This action cannot be undone.
+            </p>
+            <div className="flex items-center justify-center gap-3 pt-2">
+              <button
+                id="btn_cancel_reset"
+                onClick={() => setShowExplicitResetConfirm(false)}
+                className="flex-1 py-2.5 px-4 rounded-xl bg-stone-100 hover:bg-stone-200 text-stone-800 font-black text-xs cursor-pointer"
+              >
+                Cancel
+              </button>
+              <button
+                id="btn_confirm_reset_progress"
+                onClick={handleConfirmResetProgress}
+                className="flex-1 py-2.5 px-4 rounded-xl bg-rose-600 hover:bg-rose-700 text-white font-black text-xs cursor-pointer shadow-md"
+              >
+                Reset Progress
+              </button>
+            </div>
+          </div>
         </div>
       )}
     </div>
@@ -1034,4 +825,3 @@ export const App: React.FC = () => {
 };
 
 export default App;
-
