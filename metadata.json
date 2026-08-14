@@ -1,6 +1,6 @@
 {
-  "name": "Magic Learning Land – LKG Adventure",
-  "description": "A fun, colorful and child-friendly educational adventure game for LKG and Nursery children (ages 4–5) featuring ABC World, Number World 1–20, Object World, Pattern World, and daily challenges.",
+  "name": "Magic Learning Land – UKG Adventure",
+  "description": "A fun, colorful and child-friendly educational adventure game for UKG children (ages 5–6) featuring Reading Forest, Number Kingdom (1–100), Math Mountain (+ & -), Puzzle Planet, parent progress analytics, and rewards.",
   "requestFramePermissions": [],
   "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
 }

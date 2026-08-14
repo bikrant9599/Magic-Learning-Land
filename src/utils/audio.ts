@@ -427,6 +427,172 @@ class SoundEngine {
     } catch {}
   }
 
+  // Card Flip Sound
+  public playCardFlip() {
+    if (!this.soundEnabled) return;
+    try {
+      const ctx = this.initCtx();
+      if (!ctx) return;
+
+      const osc = ctx.createOscillator();
+      const gain = ctx.createGain();
+      osc.type = 'sine';
+      osc.frequency.setValueAtTime(300, ctx.currentTime);
+      osc.frequency.exponentialRampToValueAtTime(600, ctx.currentTime + 0.07);
+
+      gain.gain.setValueAtTime(0.18, ctx.currentTime);
+      gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.08);
+
+      osc.connect(gain);
+      gain.connect(ctx.destination);
+
+      osc.start();
+      osc.stop(ctx.currentTime + 0.09);
+    } catch {}
+  }
+
+  // Chest Open Jingle
+  public playChestOpen() {
+    if (!this.soundEnabled) return;
+    try {
+      const ctx = this.initCtx();
+      if (!ctx) return;
+
+      const notes = [440, 554.37, 659.25, 880, 1108.73];
+      notes.forEach((freq, idx) => {
+        const osc = ctx.createOscillator();
+        const gain = ctx.createGain();
+        osc.type = 'triangle';
+        osc.frequency.setValueAtTime(freq, ctx.currentTime + idx * 0.06);
+
+        const st = ctx.currentTime + idx * 0.06;
+        gain.gain.setValueAtTime(0.22, st);
+        gain.gain.exponentialRampToValueAtTime(0.001, st + 0.3);
+
+        osc.connect(gain);
+        gain.connect(ctx.destination);
+
+        osc.start(st);
+        osc.stop(st + 0.35);
+      });
+    } catch {}
+  }
+
+  // Bridge Hop / Water Drop Step
+  public playBridgeStep() {
+    if (!this.soundEnabled) return;
+    try {
+      const ctx = this.initCtx();
+      if (!ctx) return;
+
+      const osc = ctx.createOscillator();
+      const gain = ctx.createGain();
+      osc.type = 'sine';
+      osc.frequency.setValueAtTime(520, ctx.currentTime);
+      osc.frequency.exponentialRampToValueAtTime(880, ctx.currentTime + 0.1);
+
+      gain.gain.setValueAtTime(0.25, ctx.currentTime);
+      gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.12);
+
+      osc.connect(gain);
+      gain.connect(ctx.destination);
+
+      osc.start();
+      osc.stop(ctx.currentTime + 0.13);
+    } catch {}
+  }
+
+  // Alligator Snap Chomp
+  public playAlligatorSnap() {
+    if (!this.soundEnabled) return;
+    try {
+      const ctx = this.initCtx();
+      if (!ctx) return;
+
+      const osc = ctx.createOscillator();
+      const gain = ctx.createGain();
+      osc.type = 'triangle';
+      osc.frequency.setValueAtTime(220, ctx.currentTime);
+      osc.frequency.exponentialRampToValueAtTime(90, ctx.currentTime + 0.14);
+
+      gain.gain.setValueAtTime(0.3, ctx.currentTime);
+      gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.15);
+
+      osc.connect(gain);
+      gain.connect(ctx.destination);
+
+      osc.start();
+      osc.stop(ctx.currentTime + 0.16);
+    } catch {}
+  }
+
+  // Gentle Background Marimba BGM Loop Synthesizer
+  private bgmTimer: number | null = null;
+  private musicEnabled: boolean = false;
+
+  public setMusicEnabled(enabled: boolean) {
+    this.musicEnabled = enabled;
+    if (enabled) {
+      this.startBgmLoop();
+    } else {
+      this.stopBgmLoop();
+    }
+  }
+
+  public isMusicEnabled() {
+    return this.musicEnabled;
+  }
+
+  private startBgmLoop() {
+    this.stopBgmLoop();
+    if (!this.musicEnabled) return;
+
+    const chords = [
+      [523.25, 659.25, 783.99], // C
+      [440.0, 554.37, 659.25],  // A
+      [349.23, 440.0, 523.25],  // F
+      [392.0, 493.88, 587.33],  // G
+    ];
+    let chordIdx = 0;
+
+    const playChord = () => {
+      if (!this.musicEnabled) return;
+      try {
+        const ctx = this.initCtx();
+        if (ctx) {
+          const chord = chords[chordIdx % chords.length];
+          chord.forEach((freq, i) => {
+            const osc = ctx.createOscillator();
+            const gain = ctx.createGain();
+            osc.type = 'sine';
+            osc.frequency.setValueAtTime(freq, ctx.currentTime + i * 0.15);
+
+            const st = ctx.currentTime + i * 0.15;
+            gain.gain.setValueAtTime(0.04, st);
+            gain.gain.exponentialRampToValueAtTime(0.0001, st + 1.2);
+
+            osc.connect(gain);
+            gain.connect(ctx.destination);
+
+            osc.start(st);
+            osc.stop(st + 1.25);
+          });
+          chordIdx++;
+        }
+      } catch {}
+      this.bgmTimer = window.setTimeout(playChord, 1800);
+    };
+
+    playChord();
+  }
+
+  private stopBgmLoop() {
+    if (this.bgmTimer) {
+      clearTimeout(this.bgmTimer);
+      this.bgmTimer = null;
+    }
+  }
+
   // Phonics letter chime
   public playLetterChime(freq = 600) {
     if (!this.soundEnabled) return;
