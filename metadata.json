@@ -1,6 +1,6 @@
 {
   "name": "Magic Learning Land – UKG Adventure",
-  "description": "A fun, colorful and child-friendly educational adventure game for UKG children (ages 5–6) featuring Reading Forest, Number Kingdom (1–100), Math Mountain (+ & -), Puzzle Planet, parent progress analytics, and rewards.",
+  "description": "Comprehensive educational adventure platform featuring 80 verified interactive mini-games across Nursery, LKG, UKG, and Class 1, with verified animal audio synthesis, daily learning missions, parent analytics, and rewards.",
   "requestFramePermissions": [],
   "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
 }

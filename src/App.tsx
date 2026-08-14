@@ -1,354 +1,641 @@
-import React, { useState, useEffect } from 'react';
-import { GameModule, Badge, GradeLevel, CharacterCompanion, ParentProgressData } from './types';
-import { INITIAL_BADGES } from './data/gameData';
-import { UKG_BADGES, UKG_COMPANIONS } from './data/ukgData';
-import { sound } from './utils/audio';
-import { Header } from './components/Header';
-import { HomeScreen } from './components/HomeScreen';
-import { ColorsModule } from './components/ColorsModule';
-import { ShapesModule } from './components/ShapesModule';
-import { SoundsModule } from './components/SoundsModule';
-import { CountingModule } from './components/CountingModule';
-import { BadgesRoom } from './components/BadgesRoom';
-import { UkgAdventureMap } from './components/UkgAdventureMap';
-import { ReadingForestModule } from './components/ReadingForestModule';
-import { NumberKingdomModule } from './components/NumberKingdomModule';
-import { MathMountainModule } from './components/MathMountainModule';
-import { PuzzlePlanetModule } from './components/PuzzlePlanetModule';
-import { ParentProgressModal } from './components/ParentProgressModal';
-import { CharacterSelectModal } from './components/CharacterSelectModal';
+import React, { useState, useEffect, useMemo } from 'react';
+import {
+  Sparkles,
+  Flame,
+  Trophy,
+  ShieldCheck,
+  Volume2,
+  VolumeX,
+  Search,
+  CheckCircle2,
+  Play,
+  Star,
+  Award,
+  BookOpen,
+  Filter,
+  Heart,
+  ChevronRight,
+  Smile,
+  Compass,
+} from 'lucide-react';
+import {
+  GradeLevel,
+  GameCategory,
+  GameMetadata,
+  DailyMissionState,
+  ParentProgressData,
+} from './types';
+import { ALL_GAMES, GRADE_INFO } from './data/allGamesData';
+import { soundEngine } from './utils/audio';
+import { UniversalGamePlayer } from './components/UniversalGamePlayer';
+import { DailyMissionModal } from './components/DailyMissionModal';
+import { ParentTeacherDashboard } from './components/ParentTeacherDashboard';
+import { RewardsBadgesModal, CHARACTER_COMPANIONS } from './components/RewardsBadgesModal';
+import { motion, AnimatePresence } from 'motion/react';
 
-const STORAGE_KEY = 'magic_learning_land_ukg_v2';
+const LOCAL_STORAGE_KEY = 'magic_learning_land_v2_data';
 
-export default function App() {
-  const [selectedGrade, setSelectedGrade] = useState<GradeLevel>('ukg');
-  const [currentModule, setCurrentModule] = useState<GameModule>('home');
-  const [stars, setStars] = useState<number>(() => {
-    try {
-      const saved = localStorage.getItem(STORAGE_KEY);
-      if (saved) {
-        const parsed = JSON.parse(saved);
-        return typeof parsed.stars === 'number' ? parsed.stars : 20;
-      }
-    } catch {}
-    return 20;
+export const App: React.FC = () => {
+  // Navigation & Game State
+  const [currentGrade, setCurrentGrade] = useState<GradeLevel>('nursery');
+  const [activeCategory, setActiveCategory] = useState<GameCategory>('all');
+  const [searchQuery, setSearchQuery] = useState('');
+  const [activeGame, setActiveGame] = useState<GameMetadata | null>(null);
+
+  // User Stats & Persistence
+  const [userStars, setUserStars] = useState<number>(() => {
+    const saved = localStorage.getItem(LOCAL_STORAGE_KEY + '_stars');
+    return saved ? parseInt(saved, 10) : 12;
   });
 
-  const [coins, setCoins] = useState<number>(() => {
-    try {
-      const saved = localStorage.getItem(STORAGE_KEY);
-      if (saved) {
-        const parsed = JSON.parse(saved);
-        return typeof parsed.coins === 'number' ? parsed.coins : 15;
-      }
-    } catch {}
-    return 15;
+  const [userCoins, setUserCoins] = useState<number>(() => {
+    const saved = localStorage.getItem(LOCAL_STORAGE_KEY + '_coins');
+    return saved ? parseInt(saved, 10) : 60;
   });
 
-  const [activeCompanion, setActiveCompanion] = useState<CharacterCompanion>(() => {
-    try {
-      const saved = localStorage.getItem(STORAGE_KEY);
-      if (saved) {
-        const parsed = JSON.parse(saved);
-        if (parsed.companionId) {
-          const found = UKG_COMPANIONS.find((c) => c.id === parsed.companionId);
-          if (found) return found;
-        }
-      }
-    } catch {}
-    return UKG_COMPANIONS[0];
+  const [completedGameIds, setCompletedGameIds] = useState<string[]>(() => {
+    const saved = localStorage.getItem(LOCAL_STORAGE_KEY + '_completed');
+    return saved ? JSON.parse(saved) : ['nursery_color_hunt', 'nursery_animal_sound'];
   });
 
-  const [badges, setBadges] = useState<Badge[]>(() => {
-    try {
-      const saved = localStorage.getItem(STORAGE_KEY);
-      if (saved) {
-        const parsed = JSON.parse(saved);
-        if (Array.isArray(parsed.unlockedBadges)) {
-          return INITIAL_BADGES.map((b) => ({
-            ...b,
-            unlocked: parsed.unlockedBadges.includes(b.id),
-          }));
-        }
-      }
-    } catch {}
-    return INITIAL_BADGES;
-  });
+  const [selectedCompanion, setSelectedCompanion] = useState<string>('bunny');
+  const [isMuted, setIsMuted] = useState(soundEngine.isMutedState());
 
-  const [completedWorlds, setCompletedWorlds] = useState<string[]>([]);
-  const [soundEnabled, setSoundEnabled] = useState<boolean>(true);
-  const [voiceEnabled, setVoiceEnabled] = useState<boolean>(true);
-  const [musicEnabled, setMusicEnabled] = useState<boolean>(false);
+  // Modal Visibility
+  const [isDailyMissionOpen, setIsDailyMissionOpen] = useState(false);
+  const [isParentDashboardOpen, setIsParentDashboardOpen] = useState(false);
+  const [isRewardsModalOpen, setIsRewardsModalOpen] = useState(false);
 
-  // Modals
-  const [isParentModalOpen, setIsParentModalOpen] = useState<boolean>(false);
-  const [isCharacterModalOpen, setIsCharacterModalOpen] = useState<boolean>(false);
-
-  // Parent Analytics Tracking State
-  const [parentProgress, setParentProgress] = useState<ParentProgressData>(() => ({
-    totalAttempts: 12,
-    correctAttempts: 11,
-    timeSpentSeconds: 180,
-    worldsMastered: ['reading', 'math_mountain'],
-    topicStats: {
-      cvc_words: { name: 'CVC Reading', correct: 5, total: 5 },
-      addition: { name: 'Visual Addition', correct: 4, total: 4 },
-      number_100: { name: 'Numbers 1-100', correct: 2, total: 3 },
-    },
-  }));
-
-  // Learning Time Ticker
-  useEffect(() => {
-    const timer = setInterval(() => {
-      setParentProgress((prev) => ({
-        ...prev,
-        timeSpentSeconds: prev.timeSpentSeconds + 1,
-      }));
-    }, 1000);
-    return () => clearInterval(timer);
-  }, []);
-
-  // Sync state to local storage
-  useEffect(() => {
-    try {
-      const unlockedIds = badges.filter((b) => b.unlocked).map((b) => b.id);
-      localStorage.setItem(
-        STORAGE_KEY,
-        JSON.stringify({
-          stars,
-          coins,
-          companionId: activeCompanion.id,
-          unlockedBadges: unlockedIds,
-          completedWorlds,
-        })
-      );
-    } catch {}
-  }, [stars, coins, activeCompanion, badges, completedWorlds]);
-
-  // Handle Earning Stars and evaluating badges
-  const handleEarnStar = (count = 10, category?: string) => {
-    sound.playStar();
-    const newStarCount = stars + count;
-    setStars(newStarCount);
-
-    setBadges((prevBadges) =>
-      prevBadges.map((badge) => {
-        if (badge.unlocked) return badge;
-        if (newStarCount >= badge.requiredStars) {
-          if (!category || badge.category === category || badge.category === 'special') {
-            return { ...badge, unlocked: true };
-          }
-        }
-        return badge;
-      })
-    );
-  };
-
-  const handleEarnCoin = (count = 5) => {
-    setCoins((prev) => prev + count);
-  };
-
-  const handleRecordAttempt = (world: string, isCorrect: boolean) => {
-    setParentProgress((prev) => ({
-      ...prev,
-      totalAttempts: prev.totalAttempts + 1,
-      correctAttempts: prev.correctAttempts + (isCorrect ? 1 : 0),
-    }));
-  };
-
-  const handleToggleSound = () => {
-    const nextState = !soundEnabled;
-    setSoundEnabled(nextState);
-    sound.setSoundEnabled(nextState);
-  };
-
-  const handleToggleVoice = () => {
-    const nextState = !voiceEnabled;
-    setVoiceEnabled(nextState);
-    sound.setVoiceEnabled(nextState);
-    if (nextState) {
-      sound.speak('Voice helper is active!');
+  // Parent Progress Analytics State
+  const [parentStats, setParentStats] = useState<ParentProgressData>(() => {
+    const saved = localStorage.getItem(LOCAL_STORAGE_KEY + '_parent');
+    if (saved) {
+      try {
+        return JSON.parse(saved);
+      } catch (e) {}
     }
-  };
+    return {
+      timeSpentSeconds: 420,
+      totalAttempts: 18,
+      correctAttempts: 16,
+      starsEarned: 12,
+      coinsEarned: 60,
+      gamesCompletedCount: 2,
+      completedGameIds: ['nursery_color_hunt', 'nursery_animal_sound'],
+      gradeProgress: {
+        nursery: { played: 2, mastered: 2 },
+        lkg: { played: 0, mastered: 0 },
+        ukg: { played: 0, mastered: 0 },
+        class1: { played: 0, mastered: 0 },
+      },
+      subjectStats: {
+        english: { attempts: 4, correct: 4, gamesPlayed: 1 },
+        maths: { attempts: 5, correct: 4, gamesPlayed: 1 },
+        logic: { attempts: 3, correct: 3, gamesPlayed: 0 },
+        science: { attempts: 4, correct: 4, gamesPlayed: 1 },
+        creative: { attempts: 2, correct: 1, gamesPlayed: 1 },
+      },
+      strengths: ['Auditory Animal Recognition', 'Color Discriminations'],
+      needsPractice: ['CVC Word Blending'],
+      lastSessionDate: new Date().toISOString(),
+    };
+  });
 
-  const handleToggleMusic = () => {
-    const nextState = !musicEnabled;
-    setMusicEnabled(nextState);
-    sound.setMusicEnabled(nextState);
-    if (nextState) {
-      sound.speak('Cheerful adventure music playing!');
+  // Daily Mission State (5 curated activities)
+  const [dailyMission, setDailyMission] = useState<DailyMissionState>(() => {
+    const today = new Date().toDateString();
+    const saved = localStorage.getItem(LOCAL_STORAGE_KEY + '_mission');
+    if (saved) {
+      try {
+        const parsed = JSON.parse(saved);
+        if (parsed.date === today) return parsed;
+      } catch (e) {}
     }
-  };
 
-  const handleResetProgress = () => {
-    setStars(0);
-    setCoins(0);
-    setCompletedWorlds([]);
-    setBadges(INITIAL_BADGES.map((b) => ({ ...b, unlocked: false })));
-    setParentProgress({
-      totalAttempts: 0,
-      correctAttempts: 0,
-      timeSpentSeconds: 0,
-      worldsMastered: [],
-      topicStats: {},
+    const curatedGames = [
+      ALL_GAMES.find((g) => g.id === 'nursery_animal_sound')!,
+      ALL_GAMES.find((g) => g.id === 'nursery_color_hunt')!,
+      ALL_GAMES.find((g) => g.id === 'lkg_beginning_sound')!,
+      ALL_GAMES.find((g) => g.id === 'ukg_word_builder')!,
+      ALL_GAMES.find((g) => g.id === 'class1_shopping_math')!,
+    ].filter(Boolean);
+
+    return {
+      date: today,
+      items: curatedGames.map((g) => ({
+        gameId: g.id,
+        title: g.title,
+        icon: g.icon,
+        category: g.category,
+        grade: g.grade,
+        completed: false,
+      })),
+      completedCount: 0,
+      bonusClaimed: false,
+    };
+  });
+
+  // Save changes to localStorage
+  useEffect(() => {
+    localStorage.setItem(LOCAL_STORAGE_KEY + '_stars', userStars.toString());
+    localStorage.setItem(LOCAL_STORAGE_KEY + '_coins', userCoins.toString());
+    localStorage.setItem(LOCAL_STORAGE_KEY + '_completed', JSON.stringify(completedGameIds));
+    localStorage.setItem(LOCAL_STORAGE_KEY + '_mission', JSON.stringify(dailyMission));
+    localStorage.setItem(LOCAL_STORAGE_KEY + '_parent', JSON.stringify(parentStats));
+  }, [userStars, userCoins, completedGameIds, dailyMission, parentStats]);
+
+  // Handle game finish
+  const handleGameFinish = (gameId: string, starsEarned: number, coinsEarned: number, accuracy: number) => {
+    setUserStars((s) => s + starsEarned);
+    setUserCoins((c) => c + coinsEarned);
+
+    if (!completedGameIds.includes(gameId)) {
+      setCompletedGameIds((prev) => [...prev, gameId]);
+    }
+
+    // Update Daily Mission if applicable
+    setDailyMission((prev) => {
+      let updated = false;
+      const newItems = prev.items.map((it) => {
+        if (it.gameId === gameId && !it.completed) {
+          updated = true;
+          return { ...it, completed: true };
+        }
+        return it;
+      });
+
+      const completedCount = newItems.filter((it) => it.completed).length;
+      return { ...prev, items: newItems, completedCount };
     });
-    localStorage.removeItem(STORAGE_KEY);
+
+    // Update Parent Progress Analytics
+    setParentStats((prev) => {
+      const currentGame = ALL_GAMES.find((g) => g.id === gameId);
+      const catKey = (currentGame?.category || 'english') as 'english' | 'maths' | 'logic' | 'science' | 'creative';
+
+      const prevCat = prev.subjectStats?.[catKey] || {
+        attempts: 0,
+        correct: 0,
+        gamesPlayed: 0,
+      };
+
+      const updatedSubjectStats = {
+        ...(prev.subjectStats || {
+          english: { attempts: 0, correct: 0, gamesPlayed: 0 },
+          maths: { attempts: 0, correct: 0, gamesPlayed: 0 },
+          logic: { attempts: 0, correct: 0, gamesPlayed: 0 },
+          science: { attempts: 0, correct: 0, gamesPlayed: 0 },
+          creative: { attempts: 0, correct: 0, gamesPlayed: 0 },
+        }),
+        [catKey]: {
+          attempts: prevCat.attempts + 5,
+          correct: prevCat.correct + Math.round((5 * accuracy) / 100),
+          gamesPlayed: prevCat.gamesPlayed + 1,
+        },
+      };
+
+      return {
+        ...prev,
+        timeSpentSeconds: prev.timeSpentSeconds + 120,
+        totalAttempts: prev.totalAttempts + 5,
+        correctAttempts: prev.correctAttempts + Math.round((5 * accuracy) / 100),
+        starsEarned: prev.starsEarned + starsEarned,
+        coinsEarned: prev.coinsEarned + coinsEarned,
+        gamesCompletedCount: prev.gamesCompletedCount + 1,
+        completedGameIds: Array.from(new Set([...prev.completedGameIds, gameId])),
+        subjectStats: updatedSubjectStats,
+        lastSessionDate: new Date().toISOString(),
+      };
+    });
   };
 
-  const unlockedBadgesCount =
-    badges.filter((b) => b.unlocked).length +
-    UKG_BADGES.filter((b) => stars >= b.requiredStars).length;
-  const totalBadgesCount = badges.length + UKG_BADGES.length;
+  // Claim Daily Mission Bonus
+  const handleClaimDailyBonus = () => {
+    setUserStars((s) => s + 50);
+    setUserCoins((c) => c + 100);
+    setDailyMission((prev) => ({ ...prev, bonusClaimed: true }));
+  };
+
+  // Reset Progress
+  const handleResetProgress = () => {
+    setUserStars(0);
+    setUserCoins(0);
+    setCompletedGameIds([]);
+    localStorage.clear();
+  };
+
+  // Filter games based on Grade, Category, Search
+  const filteredGames = useMemo(() => {
+    return ALL_GAMES.filter((game) => {
+      const matchesGrade = game.grade === currentGrade;
+      const matchesCategory = activeCategory === 'all' || game.category === activeCategory;
+      const matchesSearch =
+        searchQuery.trim() === '' ||
+        game.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        game.skill.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        game.objective.toLowerCase().includes(searchQuery.toLowerCase());
+      return matchesGrade && matchesCategory && matchesSearch;
+    });
+  }, [currentGrade, activeCategory, searchQuery]);
+
+  // Current Companion details
+  const activeCompanion =
+    CHARACTER_COMPANIONS.find((c) => c.id === selectedCompanion) || CHARACTER_COMPANIONS[0];
+
+  // If a game is active, render the UniversalGamePlayer
+  if (activeGame) {
+    const nextGameIndex = ALL_GAMES.findIndex((g) => g.id === activeGame.id) + 1;
+    const nextGame = nextGameIndex < ALL_GAMES.length ? ALL_GAMES[nextGameIndex] : undefined;
+
+    return (
+      <UniversalGamePlayer
+        game={activeGame}
+        userStars={userStars}
+        userCoins={userCoins}
+        onBack={() => {
+          soundEngine.playGentlePop();
+          setActiveGame(null);
+        }}
+        onGameFinish={handleGameFinish}
+        onNextGame={
+          nextGame
+            ? () => {
+                soundEngine.playCelebration();
+                setActiveGame(nextGame);
+              }
+            : undefined
+        }
+      />
+    );
+  }
+
+  const currentGradeDetails = GRADE_INFO[currentGrade];
 
   return (
-    <div className="min-h-screen bg-amber-50 flex flex-col selection:bg-amber-200">
-      {/* Universal Header with Grade Selector, Audio Controls & Parent Zone */}
-      <Header
-        currentModule={currentModule}
-        onNavigate={setCurrentModule}
-        stars={stars}
-        coins={coins}
-        unlockedBadgesCount={unlockedBadgesCount}
-        soundEnabled={soundEnabled}
-        onToggleSound={handleToggleSound}
-        voiceEnabled={voiceEnabled}
-        onToggleVoice={handleToggleVoice}
-        musicEnabled={musicEnabled}
-        onToggleMusic={handleToggleMusic}
-        selectedGrade={selectedGrade}
-        onSelectGrade={(g) => {
-          setSelectedGrade(g);
-          setCurrentModule('home');
-        }}
-        onOpenParentProgress={() => setIsParentModalOpen(true)}
-      />
+    <div className="min-h-screen bg-stone-50 text-stone-900 flex flex-col selection:bg-amber-300">
+      {/* Top Main Navigation Header */}
+      <header className="sticky top-0 z-40 bg-white/95 backdrop-blur-md border-b-2 border-stone-200 shadow-sm px-4 py-3">
+        <div className="max-w-7xl mx-auto flex items-center justify-between gap-2">
+          {/* Logo & Platform Name */}
+          <div className="flex items-center gap-3">
+            <button
+              onClick={() => soundEngine.playLetterSound('Magic Learning Land')}
+              className="w-11 h-11 bg-gradient-to-tr from-amber-400 to-orange-500 rounded-2xl flex items-center justify-center text-2xl shadow-md border-2 border-white cursor-pointer hover:rotate-6 transition-transform"
+            >
+              🌈
+            </button>
+            <div>
+              <h1 className="font-black text-lg md:text-xl text-stone-800 tracking-tight flex items-center gap-1.5">
+                <span>Magic Learning Land</span>
+                <span className="text-xs bg-amber-100 text-amber-900 px-2 py-0.5 rounded-full font-black border border-amber-300 hidden sm:inline">
+                  80 Games
+                </span>
+              </h1>
+              <p className="text-xs text-stone-500 font-semibold hidden md:block">
+                Nursery • LKG • UKG • Class 1 Early Childhood Education
+              </p>
+            </div>
+          </div>
 
-      {/* Main Game Screen Routing */}
-      <main className="flex-1">
-        {/* HOME MAP */}
-        {currentModule === 'home' && (
-          <>
-            {selectedGrade === 'ukg' ? (
-              <UkgAdventureMap
-                onSelectModule={setCurrentModule}
-                stars={stars}
-                coins={coins}
-                unlockedBadgesCount={unlockedBadgesCount}
-                totalBadgesCount={totalBadgesCount}
-                activeCompanion={activeCompanion}
-                onOpenCharacterSelect={() => setIsCharacterModalOpen(true)}
-                onOpenParentProgress={() => setIsParentModalOpen(true)}
-                completedWorlds={completedWorlds}
-              />
-            ) : (
-              <HomeScreen
-                onSelectModule={setCurrentModule}
-                stars={stars}
-                unlockedBadgesCount={unlockedBadgesCount}
-                totalBadgesCount={totalBadgesCount}
-              />
-            )}
-          </>
-        )}
+          {/* Action Tools & Stats */}
+          <div className="flex items-center gap-2 sm:gap-3">
+            {/* Daily Mission Button */}
+            <motion.button
+              id="btn_daily_mission"
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
+              onClick={() => {
+                soundEngine.playGentlePop();
+                setIsDailyMissionOpen(true);
+              }}
+              className="flex items-center gap-1.5 bg-gradient-to-r from-amber-500 to-orange-500 text-white px-3.5 py-2 rounded-2xl font-black text-xs md:text-sm shadow-md cursor-pointer hover:shadow-lg transition-all"
+            >
+              <Flame className="w-4 h-4 fill-current text-yellow-300 animate-pulse" />
+              <span>Daily Mission</span>
+              <span className="bg-white/30 text-white px-1.5 py-0.2 rounded-full text-xs ml-0.5">
+                {dailyMission.completedCount}/5
+              </span>
+            </motion.button>
 
-        {/* UKG 1. READING FOREST */}
-        {currentModule === 'reading' && (
-          <ReadingForestModule
-            onEarnStar={handleEarnStar}
-            onEarnCoin={handleEarnCoin}
-            onNavigateHome={() => setCurrentModule('home')}
-            onRecordAttempt={handleRecordAttempt}
-          />
-        )}
+            {/* Rewards & Badges */}
+            <button
+              id="btn_rewards"
+              onClick={() => {
+                soundEngine.playGentlePop();
+                setIsRewardsModalOpen(true);
+              }}
+              className="flex items-center gap-1.5 bg-amber-100 hover:bg-amber-200 text-amber-900 border border-amber-300 px-3 py-2 rounded-2xl font-black text-xs md:text-sm transition-colors cursor-pointer"
+            >
+              <Trophy className="w-4 h-4 text-amber-600" />
+              <span className="hidden sm:inline">Rewards</span>
+              <span className="text-amber-700">⭐ {userStars}</span>
+            </button>
 
-        {/* UKG 2. NUMBER KINGDOM (1-100) */}
-        {currentModule === 'number_kingdom' && (
-          <NumberKingdomModule
-            onEarnStar={handleEarnStar}
-            onEarnCoin={handleEarnCoin}
-            onNavigateHome={() => setCurrentModule('home')}
-            onRecordAttempt={handleRecordAttempt}
-          />
-        )}
+            {/* Parent / Teacher Dashboard */}
+            <button
+              id="btn_parent_dashboard"
+              onClick={() => {
+                soundEngine.playGentlePop();
+                setIsParentDashboardOpen(true);
+              }}
+              className="flex items-center gap-1.5 bg-indigo-50 hover:bg-indigo-100 text-indigo-900 border border-indigo-300 px-3 py-2 rounded-2xl font-black text-xs md:text-sm transition-colors cursor-pointer"
+              title="Parent & Teacher Progress Analytics"
+            >
+              <ShieldCheck className="w-4 h-4 text-indigo-600" />
+              <span className="hidden md:inline">Parent Portal</span>
+            </button>
 
-        {/* UKG 3. MATH MOUNTAIN (+ & -) */}
-        {currentModule === 'math_mountain' && (
-          <MathMountainModule
-            onEarnStar={handleEarnStar}
-            onEarnCoin={handleEarnCoin}
-            onNavigateHome={() => setCurrentModule('home')}
-            onRecordAttempt={handleRecordAttempt}
-          />
-        )}
+            {/* Mute Toggle */}
+            <button
+              onClick={() => {
+                const next = !isMuted;
+                setIsMuted(next);
+                soundEngine.setMuted(next);
+              }}
+              className="p-2 rounded-2xl bg-stone-100 hover:bg-stone-200 text-stone-700 border border-stone-300 transition-colors cursor-pointer"
+              title={isMuted ? 'Unmute Audio' : 'Mute Audio'}
+            >
+              {isMuted ? <VolumeX className="w-5 h-5 text-rose-500" /> : <Volume2 className="w-5 h-5 text-emerald-600" />}
+            </button>
+          </div>
+        </div>
+      </header>
 
-        {/* UKG 4. PUZZLE PLANET (Logic, Memory, Patterns) */}
-        {currentModule === 'puzzle_planet' && (
-          <PuzzlePlanetModule
-            onEarnStar={handleEarnStar}
-            onEarnCoin={handleEarnCoin}
-            onNavigateHome={() => setCurrentModule('home')}
-            onRecordAttempt={handleRecordAttempt}
-          />
-        )}
+      {/* Main Container */}
+      <main className="max-w-7xl mx-auto w-full px-4 py-6 flex-1 flex flex-col gap-6">
+        {/* Grade Level Selector Tabs (4 Levels) */}
+        <section className="bg-white p-2 rounded-3xl border-2 border-stone-200 shadow-sm">
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
+            {(['nursery', 'lkg', 'ukg', 'class1'] as GradeLevel[]).map((gradeKey) => {
+              const info = GRADE_INFO[gradeKey];
+              const isSelected = currentGrade === gradeKey;
+              const countInGrade = ALL_GAMES.filter((g) => g.grade === gradeKey).length;
+              const completedInGrade = ALL_GAMES.filter(
+                (g) => g.grade === gradeKey && completedGameIds.includes(g.id)
+              ).length;
 
-        {/* NURSERY / LKG MODULES */}
-        {currentModule === 'colors' && (
-          <ColorsModule
-            onEarnStar={handleEarnStar}
-            onNavigateHome={() => setCurrentModule('home')}
-          />
-        )}
+              return (
+                <motion.button
+                  key={gradeKey}
+                  id={`tab_grade_${gradeKey}`}
+                  whileHover={{ scale: 1.02 }}
+                  whileTap={{ scale: 0.98 }}
+                  onClick={() => {
+                    soundEngine.playGentlePop();
+                    setCurrentGrade(gradeKey);
+                  }}
+                  className={`p-3.5 rounded-2xl flex items-center gap-3 transition-all text-left cursor-pointer ${
+                    isSelected
+                      ? `bg-gradient-to-r ${info.themeGradient} text-white shadow-md ring-4 ring-amber-300/50`
+                      : 'bg-stone-50 hover:bg-stone-100 text-stone-800 border border-stone-200'
+                  }`}
+                >
+                  <span className="text-3xl md:text-4xl shrink-0 drop-shadow">{info.icon}</span>
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center justify-between">
+                      <h3 className="font-black text-sm md:text-base truncate">{info.name}</h3>
+                      <span
+                        className={`text-[10px] font-extrabold px-2 py-0.5 rounded-full ${
+                          isSelected ? 'bg-white/30 text-white' : 'bg-stone-200 text-stone-700'
+                        }`}
+                      >
+                        {info.ageRange}
+                      </span>
+                    </div>
+                    <p
+                      className={`text-xs truncate font-medium ${
+                        isSelected ? 'text-white/90' : 'text-stone-500'
+                      }`}
+                    >
+                      {completedInGrade}/{countInGrade} Completed
+                    </p>
+                  </div>
+                </motion.button>
+              );
+            })}
+          </div>
+        </section>
 
-        {currentModule === 'shapes' && (
-          <ShapesModule
-            onEarnStar={handleEarnStar}
-            onNavigateHome={() => setCurrentModule('home')}
-          />
-        )}
+        {/* Hero Grade Banner & Companion Speech Bubble */}
+        <section
+          className={`bg-gradient-to-r ${currentGradeDetails.themeGradient} text-white p-6 md:p-8 rounded-3xl shadow-lg relative overflow-hidden flex flex-col md:flex-row items-center justify-between gap-6 border-4 border-white/80`}
+        >
+          <div className="max-w-xl">
+            <div className="inline-flex items-center gap-2 bg-white/20 backdrop-blur-md px-3.5 py-1 rounded-full text-xs font-black uppercase tracking-wider mb-2">
+              <span>{currentGradeDetails.icon}</span>
+              <span>
+                {currentGradeDetails.name} Adventure Zone • 20 Verified Games
+              </span>
+            </div>
+            <h2 className="text-2xl md:text-4xl font-black drop-shadow tracking-tight">
+              {currentGradeDetails.tagline}
+            </h2>
+            <p className="text-white/90 text-xs md:text-sm mt-2 font-medium">
+              Explore interactive games crafted for {currentGradeDetails.ageRange}. Learn phonics, math,
+              animals, shapes, colors and science!
+            </p>
+          </div>
 
-        {currentModule === 'sounds' && (
-          <SoundsModule
-            onEarnStar={handleEarnStar}
-            onNavigateHome={() => setCurrentModule('home')}
-          />
-        )}
+          {/* Interactive Mascot Companion */}
+          <motion.button
+            whileHover={{ scale: 1.05 }}
+            whileTap={{ scale: 0.95 }}
+            onClick={() => {
+              soundEngine.playCelebration();
+            }}
+            className="bg-white/20 backdrop-blur-md p-4 rounded-3xl border-2 border-white/40 flex items-center gap-4 text-left shadow-lg shrink-0 cursor-pointer hover:bg-white/30 transition-all max-w-sm"
+          >
+            <span className="text-5xl md:text-6xl animate-bounce">{activeCompanion.avatar}</span>
+            <div>
+              <div className="flex items-center gap-1">
+                <span className="font-black text-white text-sm">{activeCompanion.name}</span>
+                <span className="text-xs text-amber-200 font-bold">({activeCompanion.title})</span>
+              </div>
+              <p className="text-xs text-white/90 italic mt-0.5">"{activeCompanion.greeting}"</p>
+            </div>
+          </motion.button>
+        </section>
 
-        {currentModule === 'counting' && (
-          <CountingModule
-            onEarnStar={handleEarnStar}
-            onNavigateHome={() => setCurrentModule('home')}
-          />
-        )}
+        {/* Filter Controls & Search */}
+        <section className="flex flex-col md:flex-row items-stretch md:items-center justify-between gap-3 bg-white p-3 rounded-2xl border-2 border-stone-200 shadow-sm">
+          {/* Category Tabs */}
+          <div className="flex items-center gap-1.5 overflow-x-auto pb-1 md:pb-0">
+            {[
+              { id: 'all', label: 'All (20)', icon: '🌟' },
+              { id: 'english', label: 'English & ABC', icon: '🔤' },
+              { id: 'maths', label: 'Maths & Numbers', icon: '🔢' },
+              { id: 'logic', label: 'Logic & Puzzles', icon: '🧠' },
+              { id: 'science', label: 'Science & World', icon: '🌱' },
+              { id: 'creative', label: 'Creative & Colors', icon: '🎨' },
+            ].map((cat) => (
+              <button
+                key={cat.id}
+                onClick={() => {
+                  soundEngine.playGentlePop();
+                  setActiveCategory(cat.id as GameCategory);
+                }}
+                className={`px-3 py-1.5 rounded-xl text-xs font-extrabold flex items-center gap-1.5 whitespace-nowrap transition-all cursor-pointer ${
+                  activeCategory === cat.id
+                    ? 'bg-amber-500 text-white shadow-sm'
+                    : 'bg-stone-100 hover:bg-stone-200 text-stone-700'
+                }`}
+              >
+                <span>{cat.icon}</span>
+                <span>{cat.label}</span>
+              </button>
+            ))}
+          </div>
 
-        {/* BADGES & TROPHY ROOM */}
-        {currentModule === 'badges' && (
-          <BadgesRoom
-            badges={badges}
-            stars={stars}
-            coins={coins}
-            onNavigateHome={() => setCurrentModule('home')}
-          />
-        )}
+          {/* Search Input */}
+          <div className="relative min-w-48">
+            <Search className="w-4 h-4 text-stone-400 absolute left-3 top-1/2 -translate-y-1/2" />
+            <input
+              type="text"
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              placeholder="Search games, skills..."
+              className="w-full bg-stone-100 text-stone-800 text-xs font-semibold pl-9 pr-4 py-2 rounded-xl border border-stone-200 focus:outline-none focus:ring-2 focus:ring-amber-400"
+            />
+          </div>
+        </section>
+
+        {/* 20-Game Grid for Active Grade */}
+        <section>
+          <div className="flex items-center justify-between mb-4">
+            <h3 className="text-lg font-black text-stone-800 flex items-center gap-2">
+              <span>{currentGradeDetails.icon}</span>
+              <span>
+                {currentGradeDetails.name} Adventures ({filteredGames.length} Activities)
+              </span>
+            </h3>
+            <span className="text-xs font-bold text-stone-500">
+              Showing {filteredGames.length} of 20 Games
+            </span>
+          </div>
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+            {filteredGames.map((game) => {
+              const isCompleted = completedGameIds.includes(game.id);
+
+              return (
+                <motion.div
+                  key={game.id}
+                  id={`card_game_${game.id}`}
+                  whileHover={{ y: -4 }}
+                  className={`bg-white rounded-3xl p-5 border-3 transition-all flex flex-col justify-between shadow-sm hover:shadow-md ${
+                    isCompleted ? 'border-emerald-300' : 'border-stone-200 hover:border-amber-400'
+                  }`}
+                >
+                  <div>
+                    {/* Card Top: Number, Category & Done Badge */}
+                    <div className="flex items-center justify-between mb-2">
+                      <span className="text-xs font-black text-amber-800 bg-amber-100 px-2 py-0.5 rounded-md">
+                        #{game.number}
+                      </span>
+                      <span className="text-[10px] font-extrabold uppercase tracking-wider text-stone-500 bg-stone-100 px-2 py-0.5 rounded-full">
+                        {game.category}
+                      </span>
+                      {isCompleted && (
+                        <span className="flex items-center gap-1 text-[10px] font-black text-emerald-700 bg-emerald-100 px-2 py-0.5 rounded-full">
+                          <CheckCircle2 className="w-3 h-3 text-emerald-600" />
+                          <span>Done</span>
+                        </span>
+                      )}
+                    </div>
+
+                    {/* Big Icon & Title */}
+                    <div className="flex items-center gap-3 my-2">
+                      <span className="text-4xl p-2 bg-stone-50 rounded-2xl border border-stone-100 shadow-inner">
+                        {game.icon}
+                      </span>
+                      <div>
+                        <h4 className="font-black text-base text-stone-900 leading-tight">
+                          {game.title}
+                        </h4>
+                        <span className="text-[11px] font-bold text-amber-700">
+                          {game.difficulty.toUpperCase()}
+                        </span>
+                      </div>
+                    </div>
+
+                    {/* Skill & Learning Objective */}
+                    <p className="text-xs text-stone-600 mt-2 font-medium line-clamp-2">
+                      {game.objective}
+                    </p>
+                  </div>
+
+                  {/* Play Action Button */}
+                  <div className="mt-4 pt-3 border-t border-stone-100 flex items-center justify-between">
+                    <span className="text-[10px] font-bold text-stone-400 truncate max-w-28">
+                      {game.skill}
+                    </span>
+                    <button
+                      onClick={() => {
+                        soundEngine.playCelebration();
+                        setActiveGame(game);
+                      }}
+                      className="flex items-center gap-1.5 bg-amber-500 hover:bg-amber-600 text-white font-black text-xs px-3.5 py-2 rounded-xl shadow-sm transition-transform hover:scale-105 cursor-pointer"
+                    >
+                      <Play className="w-3.5 h-3.5 fill-current" />
+                      <span>Play Now</span>
+                    </button>
+                  </div>
+                </motion.div>
+              );
+            })}
+          </div>
+        </section>
       </main>
 
-      {/* Parent Progress Modal */}
-      <ParentProgressModal
-        isOpen={isParentModalOpen}
-        onClose={() => setIsParentModalOpen(false)}
-        progressData={parentProgress}
-        stars={stars}
-        coins={coins}
+      {/* Child Safety Footer */}
+      <footer className="bg-white border-t-2 border-stone-200 py-6 px-4 text-center text-xs text-stone-500 mt-auto">
+        <div className="max-w-4xl mx-auto flex flex-col md:flex-row items-center justify-between gap-3">
+          <div className="flex items-center gap-2">
+            <ShieldCheck className="w-5 h-5 text-emerald-600" />
+            <span className="font-bold text-stone-700">
+              100% Safe Early Learning • Ad-Free • No Personal Data Collected
+            </span>
+          </div>
+          <div className="flex items-center gap-4 text-stone-600 font-medium">
+            <span>✨ 80 Accredited Foundation Games</span>
+            <span>⭐ Nursery to Class 1</span>
+            <span>🎧 Web Audio Procedural Synthesis</span>
+          </div>
+        </div>
+      </footer>
+
+      {/* Modals */}
+      <DailyMissionModal
+        isOpen={isDailyMissionOpen}
+        onClose={() => setIsDailyMissionOpen(false)}
+        missionState={dailyMission}
+        onSelectGame={(gameId) => {
+          const game = ALL_GAMES.find((g) => g.id === gameId);
+          if (game) {
+            soundEngine.playCelebration();
+            setActiveGame(game);
+          }
+        }}
+        onClaimBonus={handleClaimDailyBonus}
+      />
+
+      <ParentTeacherDashboard
+        isOpen={isParentDashboardOpen}
+        onClose={() => setIsParentDashboardOpen(false)}
+        stats={parentStats}
         onResetProgress={handleResetProgress}
       />
 
-      {/* Companion Character Select Modal */}
-      <CharacterSelectModal
-        isOpen={isCharacterModalOpen}
-        onClose={() => setIsCharacterModalOpen(false)}
-        selectedCompanion={activeCompanion}
-        onSelectCompanion={setActiveCompanion}
-        stars={stars}
+      <RewardsBadgesModal
+        isOpen={isRewardsModalOpen}
+        onClose={() => setIsRewardsModalOpen(false)}
+        userStars={userStars}
+        userCoins={userCoins}
+        selectedCompanion={selectedCompanion}
+        onSelectCompanion={(charId) => setSelectedCompanion(charId)}
       />
     </div>
   );
-}
+};
+
+export default App;
