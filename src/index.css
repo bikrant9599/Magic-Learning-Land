@@ -24,5 +24,58 @@
   * {
     -webkit-tap-highlight-color: transparent;
   }
+
+  html {
+    scroll-behavior: smooth;
+    text-size-adjust: 100%;
+    -webkit-text-size-adjust: 100%;
+  }
+
+  body {
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    text-rendering: optimizeLegibility;
+  }
+
+  /* Instant responsive touch without 300ms mobile delay */
+  button,
+  a,
+  [role="button"],
+  input,
+  select {
+    touch-action: manipulation;
+  }
+
+  /* Native smooth momentum scrolling on touch devices */
+  div, section, main, aside, nav {
+    -webkit-overflow-scrolling: touch;
+  }
+}
+
+/* GPU acceleration for butter-smooth 60/120fps motion */
+.smooth-gpu {
+  transform: translateZ(0);
+  backface-visibility: hidden;
+  perspective: 1000px;
+}
+
+/* Custom silky scrollbars */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: rgba(168, 162, 158, 0.35);
+  border-radius: 9999px;
+  transition: background-color 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(168, 162, 158, 0.65);
 }
 

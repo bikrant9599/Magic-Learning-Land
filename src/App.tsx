@@ -407,7 +407,8 @@ export const App: React.FC = () => {
                   key={game.id}
                   id={`today_game_${game.id}`}
                   whileHover={{ y: -4, scale: 1.02 }}
-                  className={`bg-white rounded-xl xs:rounded-2xl p-3 xs:p-3.5 2xl:p-4 border-2 shadow-xs flex flex-col justify-between transition-all ${
+                  transition={{ type: 'spring', stiffness: 400, damping: 25 }}
+                  className={`bg-white rounded-xl xs:rounded-2xl p-3 xs:p-3.5 2xl:p-4 border-2 shadow-xs flex flex-col justify-between smooth-gpu transition-[border-color,box-shadow,background-color] duration-200 ${
                     isDone ? 'border-emerald-300 bg-emerald-50/40' : 'border-amber-200 hover:border-amber-400'
                   }`}
                 >
@@ -520,7 +521,8 @@ export const App: React.FC = () => {
                   key={game.id}
                   id={`card_game_${game.id}`}
                   whileHover={{ y: -5, scale: 1.02 }}
-                  className={`bg-white rounded-2xl xs:rounded-3xl p-4 xs:p-5 2xl:p-6 border-2 xs:border-3 transition-all flex flex-col justify-between shadow-sm hover:shadow-md ${
+                  transition={{ type: 'spring', stiffness: 400, damping: 25 }}
+                  className={`bg-white rounded-2xl xs:rounded-3xl p-4 xs:p-5 2xl:p-6 border-2 xs:border-3 flex flex-col justify-between shadow-sm hover:shadow-md smooth-gpu transition-[border-color,box-shadow,background-color] duration-200 ${
                     isCompleted ? 'border-emerald-300' : 'border-stone-200 hover:border-amber-400'
                   }`}
                 >

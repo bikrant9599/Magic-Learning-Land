@@ -129,7 +129,13 @@ export const UniversalGamePlayer: React.FC<UniversalGamePlayerProps> = ({
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-amber-50 via-sky-50 to-emerald-50 text-stone-900 flex flex-col antialiased">
+    <motion.div
+      initial={{ opacity: 0, y: 6 }}
+      animate={{ opacity: 1, y: 0 }}
+      exit={{ opacity: 0, y: -6 }}
+      transition={{ duration: 0.2, ease: [0.16, 1, 0.3, 1] }}
+      className="min-h-screen bg-gradient-to-b from-amber-50 via-sky-50 to-emerald-50 text-stone-900 flex flex-col antialiased"
+    >
       {/* Top Navigation Bar */}
       <header className="sticky top-0 z-30 bg-white/95 backdrop-blur-md border-b-2 border-stone-200 px-3 xs:px-4 md:px-6 py-2.5 xs:py-3 shadow-xs">
         <div className="max-w-6xl 2xl:max-w-7xl mx-auto flex items-center justify-between gap-2 xs:gap-3">
@@ -306,6 +312,6 @@ export const UniversalGamePlayer: React.FC<UniversalGamePlayerProps> = ({
           </motion.div>
         )}
       </AnimatePresence>
-    </div>
+    </motion.div>
   );
 };

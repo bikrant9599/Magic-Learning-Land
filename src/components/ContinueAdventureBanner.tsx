@@ -70,11 +70,12 @@ export const ContinueAdventureBanner: React.FC<ContinueAdventureBannerProps> = (
               id="btn_continue_adventure"
               whileHover={{ scale: 1.03, y: -2 }}
               whileTap={{ scale: 0.97 }}
+              transition={{ type: 'spring', stiffness: 400, damping: 25 }}
               onClick={() => {
                 soundEngine.playCelebration();
                 onContinueAdventure();
               }}
-              className="w-full xs:w-auto min-h-[48px] py-3 px-5 xs:px-6 md:px-7 2xl:px-8 rounded-xl xs:rounded-2xl bg-white text-amber-700 hover:text-amber-800 font-black text-xs xs:text-sm md:text-base 2xl:text-lg flex items-center justify-center gap-2 xs:gap-2.5 shadow-lg hover:shadow-xl transition-all cursor-pointer ring-4 ring-amber-300/40 shrink-0"
+              className="w-full xs:w-auto min-h-[48px] py-3 px-5 xs:px-6 md:px-7 2xl:px-8 rounded-xl xs:rounded-2xl bg-white text-amber-700 hover:text-amber-800 font-black text-xs xs:text-sm md:text-base 2xl:text-lg flex items-center justify-center gap-2 xs:gap-2.5 shadow-lg hover:shadow-xl cursor-pointer ring-4 ring-amber-300/40 shrink-0 smooth-gpu transition-[box-shadow,color] duration-200"
             >
               <Play className="w-4 h-4 xs:w-5 xs:h-5 fill-current text-amber-600 shrink-0" />
               <span>▶ CONTINUE ADVENTURE</span>
@@ -168,11 +169,12 @@ export const ContinueAdventureBanner: React.FC<ContinueAdventureBannerProps> = (
               id="btn_continue_last_played"
               whileHover={{ scale: 1.02 }}
               whileTap={{ scale: 0.98 }}
+              transition={{ type: 'spring', stiffness: 400, damping: 25 }}
               onClick={() => {
                 soundEngine.playCelebration();
                 onContinueLastPlayed(lastPlayedGame);
               }}
-              className="w-full min-h-[44px] py-2.5 px-4 rounded-xl bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 text-white font-black text-xs xs:text-sm flex items-center justify-center gap-1.5 shadow-md cursor-pointer transition-transform"
+              className="w-full min-h-[44px] py-2.5 px-4 rounded-xl bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 text-white font-black text-xs xs:text-sm flex items-center justify-center gap-1.5 shadow-md cursor-pointer smooth-gpu"
             >
               <Play className="w-3.5 h-3.5 fill-current shrink-0" />
               <span>CONTINUE THIS GAME</span>

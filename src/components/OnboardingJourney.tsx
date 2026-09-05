@@ -111,35 +111,35 @@ export const OnboardingJourney: React.FC<OnboardingJourneyProps> = ({
         <motion.div
           animate={{ x: [0, 50, 0], y: [0, -10, 0] }}
           transition={{ duration: 12, repeat: Infinity, ease: 'easeInOut' }}
-          className="absolute top-10 left-10 text-4xl xs:text-5xl opacity-40"
+          className="absolute top-10 left-10 text-4xl xs:text-5xl opacity-40 smooth-gpu"
         >
           ☁️
         </motion.div>
         <motion.div
           animate={{ x: [0, -40, 0], y: [0, 15, 0] }}
           transition={{ duration: 15, repeat: Infinity, ease: 'easeInOut', delay: 1 }}
-          className="absolute top-24 right-16 text-5xl xs:text-6xl opacity-35"
+          className="absolute top-24 right-16 text-5xl xs:text-6xl opacity-35 smooth-gpu"
         >
           ☁️
         </motion.div>
         <motion.div
           animate={{ y: [0, -25, 0], rotate: [-5, 5, -5] }}
           transition={{ duration: 6, repeat: Infinity, ease: 'easeInOut' }}
-          className="absolute bottom-20 left-16 text-3xl xs:text-4xl opacity-50"
+          className="absolute bottom-20 left-16 text-3xl xs:text-4xl opacity-50 smooth-gpu"
         >
           🎈
         </motion.div>
         <motion.div
           animate={{ y: [0, -30, 0], rotate: [5, -5, 5] }}
           transition={{ duration: 7, repeat: Infinity, ease: 'easeInOut', delay: 2 }}
-          className="absolute top-1/3 right-10 text-3xl xs:text-4xl opacity-45"
+          className="absolute top-1/3 right-10 text-3xl xs:text-4xl opacity-45 smooth-gpu"
         >
           🦋
         </motion.div>
         <motion.div
           animate={{ scale: [1, 1.2, 1], rotate: [0, 180, 360] }}
           transition={{ duration: 10, repeat: Infinity, ease: 'linear' }}
-          className="absolute bottom-10 right-24 text-2xl xs:text-3xl opacity-40"
+          className="absolute bottom-10 right-24 text-2xl xs:text-3xl opacity-40 smooth-gpu"
         >
           ✨
         </motion.div>
@@ -272,8 +272,9 @@ export const OnboardingJourney: React.FC<OnboardingJourneyProps> = ({
                       id={`card_select_${gradeKey}`}
                       whileHover={{ scale: 1.02, y: -2 }}
                       whileTap={{ scale: 0.98 }}
+                      transition={{ type: 'spring', stiffness: 400, damping: 25 }}
                       onClick={() => handleSelectGrade(gradeKey)}
-                      className={`relative p-3 xs:p-3.5 md:p-4 rounded-2xl xs:rounded-3xl text-left border-3 transition-all flex items-center gap-3 cursor-pointer shadow-xs ${
+                      className={`relative p-3 xs:p-3.5 md:p-4 rounded-2xl xs:rounded-3xl text-left border-3 flex items-center gap-3 cursor-pointer shadow-xs smooth-gpu transition-[border-color,box-shadow,background-color] duration-200 ${
                         isSelected
                           ? `bg-gradient-to-r ${info.themeGradient} text-white border-white ring-3 xs:ring-4 ring-amber-400 shadow-md`
                           : 'bg-stone-50 hover:bg-stone-100 text-stone-800 border-stone-200'
